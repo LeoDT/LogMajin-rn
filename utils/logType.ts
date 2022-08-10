@@ -1,4 +1,4 @@
-import {PlaceholderType} from '../atoms/logs';
+import {PlaceholderType} from '../atoms/logType';
 
 export function showPlaceholderType(t: PlaceholderType) {
   switch (t) {

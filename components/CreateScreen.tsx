@@ -1,24 +1,39 @@
-import {useNavigation} from '@react-navigation/native';
-import {useAtomValue} from 'jotai';
-import {nanoid} from 'nanoid';
-import {useEffect, useMemo} from 'react';
+import {useCallback, useMemo} from 'react';
 import {
-  Button,
-  StyleSheet,
   FlatList,
-  useWindowDimensions,
-  View,
-  TouchableHighlight,
+  StyleSheet,
   Text,
+  TouchableHighlight,
+  TouchableOpacity,
+  View,
+  useWindowDimensions,
 } from 'react-native';
 
-import {logTypeFamily, logTypesAtom} from '../atoms/logs';
+import {useNavigation} from '@react-navigation/native';
+import {useAtomValue} from 'jotai';
+import {useAtomCallback} from 'jotai/utils';
+import {nanoid} from 'nanoid';
+
+import {logTypeFamily, logTypesAtom} from '../atoms/logType';
 import {colors} from '../colors';
 import {LogTypeItem} from './LogTypeItem';
 
 export function CreateScreen(): JSX.Element {
   const navigation = useNavigation();
   const logTypes = useAtomValue(logTypesAtom);
+  const makeLogType = useAtomCallback(
+    useCallback(
+      (get, set) => {
+        const id = nanoid();
+        const atom = logTypeFamily({id});
+
+        set(logTypesAtom, [get(atom), ...get(logTypesAtom)]);
+
+        navigation.navigate('EditLogType', {logTypeId: id});
+      },
+      [navigation],
+    ),
+  );
   const {width} = useWindowDimensions();
   const listSize = useMemo(() => {
     const columns = width >= 225 * 2 ? 3 : 2;
@@ -47,18 +62,24 @@ export function CreateScreen(): JSX.Element {
                   index % listSize.columns < listSize.columns - 1 ? 15 : 0,
               },
             ]}>
-            <LogTypeItem logTypeId={item.id} />
+            <TouchableOpacity
+              activeOpacity={0.9}
+              onPress={() => {
+                navigation.navigate('AddLog', {
+                  logTypeId: item.id,
+                });
+              }}>
+              <LogTypeItem logTypeId={item.id} />
+            </TouchableOpacity>
           </View>
         )}
       />
+
       <View style={styles.create}>
         <TouchableHighlight
           style={styles.createButton}
           onPress={() => {
-            const id = nanoid();
-            logTypeFamily({id});
-
-            navigation.navigate('EditLogType', {logTypeId: id});
+            makeLogType();
           }}>
           <Text style={styles.createText}>Create Type</Text>
         </TouchableHighlight>

@@ -13,7 +13,7 @@ import {
 import {SafeAreaView} from 'react-native-safe-area-context';
 import BottomSheet from '@gorhom/bottom-sheet';
 
-import {commitLogTypeAtom, logTypeFamily} from '../atoms/logs';
+import {logTypeFamily} from '../atoms/logType';
 import {colors, colorValueForLogType} from '../colors';
 import {HomeStackParamList} from '../types';
 
@@ -33,7 +33,6 @@ export function EditLogTypeModal({route, navigation}: Props): JSX.Element {
   const {logTypeId} = route.params;
   const logTypeAtom = logTypeFamily({id: logTypeId});
   const logType = useAtomValue(logTypeAtom);
-  const commitLogType = useSetAtom(commitLogTypeAtom);
   const setLogType = useSetAtom(logTypeAtom);
   const themeColor = useMemo(
     () => colorValueForLogType(logType.color),
@@ -68,7 +67,7 @@ export function EditLogTypeModal({route, navigation}: Props): JSX.Element {
           <TextInput
             value={logType.name}
             onChangeText={v => {
-              commitLogType({...logType, name: v});
+              setLogType({...logType, name: v});
             }}
             style={styles.nameEditor}
           />

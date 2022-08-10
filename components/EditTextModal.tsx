@@ -13,7 +13,7 @@ import {
 
 import {KeyboardAccessoryView} from 'react-native-keyboard-accessory';
 
-import {logTypeFamily} from '../atoms/logs';
+import {logTypeFamily} from '../atoms/logType';
 import {HomeStackParamList} from '../types';
 
 interface Props

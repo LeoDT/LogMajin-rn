@@ -1,8 +1,8 @@
 import {atom} from 'jotai';
 import {atomFamily, atomWithStorage} from 'jotai/utils';
 import {nanoid} from 'nanoid';
-import {Color, randomColorForLogType} from '../colors';
 
+import {Color, randomColorForLogType} from '../colors';
 import {logTypeMMKVStorage, makeStorageWithMMKV} from '../utils/storage';
 
 export enum PlaceholderType {
@@ -38,24 +38,15 @@ export type Placeholder =
   | TextInputPlaceholder
   | SelectPlaceholder;
 
+export type NeedInputPlaceholder = TextInputPlaceholder | SelectPlaceholder;
+
 export interface LogType {
   id: string;
   name: string;
   placeholders: Array<Placeholder>;
   createAt: Date;
+  updateAt: Date;
   color: Color;
-}
-
-export interface PlaceholderValue {
-  name: string;
-  value: string;
-}
-
-export interface Log {
-  id: string;
-  type: LogType;
-  createAt: number;
-  placeholderValues: Array<PlaceholderValue>;
 }
 
 export const logTypeStorage = makeStorageWithMMKV<LogType>(logTypeMMKVStorage);
@@ -65,56 +56,62 @@ logTypesAtom.onMount = set => {
   console.log('onmount');
 
   (async () => {
-    const types: LogType[] = [];
     const items = (await logTypeMMKVStorage.indexer.maps.getAll()) as Array<
       [string, LogType]
     >;
 
     console.log(`keys ${items}`);
 
-    items?.map(([, v]) => {
-      logTypeFamily(v);
-      types.push(v);
-    });
+    set(
+      items?.map(([, v]) => {
+        logTypeFamily(v);
 
-    set(types);
+        return v;
+      }),
+    );
   })();
 };
 
-export const commitLogTypeAtom = atom(null, (get, set, logType: LogType) => {
-  const logTypes = get(logTypesAtom);
-  const notCommitted = logTypes.findIndex(t => t.id === logType.id) === -1;
+export function makeDefaultLogType(id: string): LogType {
+  const timestamp = new Date();
 
-  set(logTypeFamily(logType), logType);
-
-  if (notCommitted) {
-    set(logTypesAtom, [logType, ...logTypes]);
-  }
-});
+  return {
+    id,
+    name: 'New Log Type',
+    placeholders: [
+      {name: 'text', kind: PlaceholderType.Text, id: nanoid(), content: ''},
+      {name: 'textInput', kind: PlaceholderType.TextInput, id: nanoid()},
+      {
+        name: 'select',
+        kind: PlaceholderType.Select,
+        options: ['Option 1', 'Option 2'],
+        multiple: false,
+        id: nanoid(),
+      },
+    ],
+    createAt: timestamp,
+    updateAt: timestamp,
+    color: randomColorForLogType(),
+  };
+}
 
 export const logTypeFamily = atomFamily(
   (params: Partial<LogType> & {id: string}) => {
-    return atomWithStorage(
+    const storageAtom = atomWithStorage(
       params.id,
-      Object.assign(
-        {
-          name: 'New Log Type',
-          placeholders: [
-            {name: 'text', kind: PlaceholderType.Text, id: nanoid()},
-            {name: 'textInput', kind: PlaceholderType.TextInput, id: nanoid()},
-            {
-              name: 'select',
-              kind: PlaceholderType.Select,
-              options: ['Option 1', 'Option 2'],
-              id: nanoid(),
-            },
-          ],
-          createAt: new Date(),
-          color: randomColorForLogType(),
-        },
-        params,
-      ),
+      Object.assign(makeDefaultLogType(params.id), params),
       logTypeStorage,
+    );
+
+    return atom(
+      get => get(storageAtom),
+      (get, set, update: LogType) => {
+        set(storageAtom, {
+          ...get(storageAtom),
+          ...update,
+          updateAt: new Date(),
+        });
+      },
     );
   },
   (a, b) => a.id === b.id,

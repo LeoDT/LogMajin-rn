@@ -4,11 +4,11 @@ import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import {ActionSheetProvider} from '@expo/react-native-action-sheet';
 import {SafeAreaProvider} from 'react-native-safe-area-context';
 import {GestureHandlerRootView} from 'react-native-gesture-handler';
+import {StyleSheet} from 'react-native';
 
 import {HomeScreen} from './components/HomeScreen';
 import {EditLogTypeModal} from './components/EditLogTypeModal';
-import {EditTextModal} from './components/EditTextModal';
-import {StyleSheet} from 'react-native';
+import {AddLogModal} from './components/AddLogModal';
 
 const Stack = createNativeStackNavigator();
 
@@ -41,7 +41,7 @@ function App() {
                     component={EditLogTypeModal}
                   />
 
-                  <Stack.Screen name="EditText" component={EditTextModal} />
+                  <Stack.Screen name="AddLog" component={AddLogModal} />
                 </Stack.Group>
               </Stack.Navigator>
             </NavigationContainer>

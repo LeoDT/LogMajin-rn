@@ -3,7 +3,10 @@ import {MMKVInstance, MMKVLoader} from 'react-native-mmkv-storage';
 export const logTypeMMKVStorage = new MMKVLoader()
   .withInstanceID('logType')
   .initialize();
-// const logMMKVStorage = new MMKVLoader().withInstanceID('log').initialize();
+
+export const logMMKVStorage = new MMKVLoader()
+  .withInstanceID('log')
+  .initialize();
 
 export function makeStorageWithMMKV<Value extends object>(mmkv: MMKVInstance) {
   return {

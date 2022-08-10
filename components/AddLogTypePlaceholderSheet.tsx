@@ -9,7 +9,7 @@ import {
 } from 'react-native';
 import BottomSheet, {BottomSheetFlatList} from '@gorhom/bottom-sheet';
 
-import {addPlaceholderAtom, LogType, PlaceholderType} from '../atoms/logs';
+import {addPlaceholderAtom, LogType, PlaceholderType} from '../atoms/logType';
 import {showPlaceholderType} from '../utils/logType';
 import {colors} from '../colors';
 

@@ -1,4 +1,3 @@
-import {useActionSheet} from '@expo/react-native-action-sheet';
 import {useSetAtom} from 'jotai';
 import {StyleSheet, Text, View, TextInput} from 'react-native';
 
@@ -7,7 +6,7 @@ import {
   Placeholder,
   PlaceholderType,
   updatePlaceholderAtom,
-} from '../atoms/logs';
+} from '../atoms/logType';
 import {colors} from '../colors';
 import {showPlaceholderType} from '../utils/logType';
 
@@ -20,17 +19,11 @@ interface Props {
   placeholder: Placeholder;
 }
 
-const placeholderOptions = [
-  ...Object.values(PlaceholderType).map(v => showPlaceholderType(v)),
-  'Cancel',
-];
-
 export function LogTypePlaceholderEditor({
   logType,
   placeholder,
 }: Props): JSX.Element {
   const updatePlaceholder = useSetAtom(updatePlaceholderAtom);
-  const {showActionSheetWithOptions} = useActionSheet();
 
   const renderDetail = () => {
     switch (placeholder.kind) {
@@ -39,6 +32,7 @@ export function LogTypePlaceholderEditor({
           <TextInput
             style={styles.editorText}
             placeholder="blah blah"
+            value={placeholder.content}
             onChangeText={v => {
               updatePlaceholder({
                 logTypeId: logType.id,

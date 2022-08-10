@@ -1,7 +1,7 @@
 export type HomeStackParamList = {
   Create: undefined;
   EditLogType: {logTypeId: string};
-  EditText: {logTypeId: string};
+  AddLog: {logTypeId: string};
 };
 
 declare global {

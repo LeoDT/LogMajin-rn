@@ -1,9 +1,9 @@
 import {useAtomValue} from 'jotai';
-import {Text, StyleSheet, Pressable} from 'react-native';
+import {Text, StyleSheet, View, Pressable} from 'react-native';
 import {useNavigation} from '@react-navigation/native';
 import LinearGradient from 'react-native-linear-gradient';
 
-import {logTypeFamily} from '../atoms/logs';
+import {logTypeFamily} from '../atoms/logType';
 import {colors} from '../colors';
 
 import HeartPulseSvg from '../assets/heart-pulse.svg';
@@ -20,7 +20,7 @@ export function LogTypeItem({logTypeId}: Props): JSX.Element {
   const color = colors[logType.color]['800'];
 
   return (
-    <Pressable style={[styles.wrapper, {backgroundColor: color}]}>
+    <View style={[styles.wrapper, {backgroundColor: color}]}>
       <LinearGradient
         style={styles.item}
         shouldRasterizeIOS={true}
@@ -48,7 +48,7 @@ export function LogTypeItem({logTypeId}: Props): JSX.Element {
           style={styles.icon}
         />
       </LinearGradient>
-    </Pressable>
+    </View>
   );
 }
 
