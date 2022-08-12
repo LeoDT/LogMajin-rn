@@ -8,11 +8,12 @@ import {useAtomCallback} from 'jotai/utils';
 import {
   commitLogAtom,
   loadLogsAtom,
-  logSectionsAtom,
+  filteredLogSectionsAtom,
   makeDefaultLog,
 } from '../atoms/log';
 import {logTypesAtom, PlaceholderType} from '../atoms/logType';
 import {colors, colorValueForLogType} from '../colors';
+import {LogsFilter} from './LogsFilter';
 
 const randomWords = [
   '啊四大皆空哈桑的几率恢复国会',
@@ -28,7 +29,7 @@ const randomWords = [
 
 export function LogsScreen(): JSX.Element {
   const loadLogs = useSetAtom(loadLogsAtom);
-  const sections = useAtomValue(logSectionsAtom);
+  const sections = useAtomValue(filteredLogSectionsAtom);
   const [refreshing, setRefreshing] = useState(false);
   const commit = useSetAtom(commitLogAtom);
   const generateRandom = useAtomCallback(
@@ -87,34 +88,49 @@ export function LogsScreen(): JSX.Element {
   }, [refresh]);
 
   return (
-    <SectionList
-      onRefresh={refresh}
-      sections={sections}
-      renderSectionHeader={({section: {title}}) => (
-        <Text style={styles.header}>{title}</Text>
-      )}
-      refreshing={refreshing}
-      renderItem={({item}) => (
-        <View style={styles.item}>
-          <Text style={styles.text}>{item.content}</Text>
+    <View style={styles.container}>
+      <View style={styles.search}>
+        <LogsFilter />
+      </View>
+      <SectionList
+        style={styles.list}
+        onRefresh={refresh}
+        sections={sections}
+        renderSectionHeader={({section: {title}}) => (
+          <Text style={styles.header}>{title}</Text>
+        )}
+        refreshing={refreshing}
+        renderItem={({item}) => (
+          <View style={styles.item}>
+            <Text style={styles.text}>{item.content}</Text>
 
-          <View style={styles.meta}>
-            <Text
-              style={[
-                styles.type,
-                {color: colorValueForLogType(item.logType.color)},
-              ]}>
-              {item.logType.name}
-            </Text>
-            <Text style={styles.date}>{item.createAt.toLocaleString()}</Text>
+            <View style={styles.meta}>
+              <Text
+                style={[
+                  styles.type,
+                  {color: colorValueForLogType(item.logType.color)},
+                ]}>
+                {item.logType.name}
+              </Text>
+              <Text style={styles.date}>{item.createAt.toLocaleString()}</Text>
+            </View>
           </View>
-        </View>
-      )}
-    />
+        )}
+      />
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+  search: {
+    height: 40,
+  },
+  list: {
+    flex: 1,
+  },
   header: {
     fontSize: 12,
     backgroundColor: colors.gray['50'],

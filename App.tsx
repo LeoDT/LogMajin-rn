@@ -1,53 +1,59 @@
-import {Provider} from 'jotai';
+import {useEffect} from 'react';
+import {StatusBar, StyleSheet} from 'react-native';
+
+import {ActionSheetProvider} from '@expo/react-native-action-sheet';
+import {BottomSheetModalProvider} from '@gorhom/bottom-sheet';
 import {NavigationContainer} from '@react-navigation/native';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
-import {ActionSheetProvider} from '@expo/react-native-action-sheet';
-import {SafeAreaProvider} from 'react-native-safe-area-context';
+import {Provider} from 'jotai';
 import {GestureHandlerRootView} from 'react-native-gesture-handler';
-import {StyleSheet} from 'react-native';
+import {SafeAreaProvider} from 'react-native-safe-area-context';
 
-import {HomeScreen} from './components/HomeScreen';
-import {EditLogTypeModal} from './components/EditLogTypeModal';
 import {AddLogModal} from './components/AddLogModal';
+import {EditLogTypeModal} from './components/EditLogTypeModal';
+import {HomeScreen} from './components/HomeScreen';
 
 const Stack = createNativeStackNavigator();
 
 function App() {
   return (
     <Provider>
-      <SafeAreaProvider>
-        <ActionSheetProvider>
-          <GestureHandlerRootView style={styles.root}>
-            <NavigationContainer>
-              <Stack.Navigator
-                initialRouteName="Home"
-                screenOptions={{
-                  headerShown: false,
-                  statusBarColor: '#fff',
-                  contentStyle: {
-                    backgroundColor: '#fff',
-                  },
-                }}>
-                <Stack.Group>
-                  <Stack.Screen name="Home" component={HomeScreen} />
-                </Stack.Group>
+      <StatusBar animated backgroundColor="#fff" barStyle="dark-content" />
 
-                <Stack.Group
+      <GestureHandlerRootView style={styles.root}>
+        <BottomSheetModalProvider>
+          <SafeAreaProvider>
+            <ActionSheetProvider>
+              <NavigationContainer>
+                <Stack.Navigator
+                  initialRouteName="Home"
                   screenOptions={{
-                    presentation: 'modal',
+                    headerShown: false,
+                    contentStyle: {
+                      backgroundColor: '#fff',
+                    },
                   }}>
-                  <Stack.Screen
-                    name="EditLogType"
-                    component={EditLogTypeModal}
-                  />
+                  <Stack.Group>
+                    <Stack.Screen name="Home" component={HomeScreen} />
+                  </Stack.Group>
 
-                  <Stack.Screen name="AddLog" component={AddLogModal} />
-                </Stack.Group>
-              </Stack.Navigator>
-            </NavigationContainer>
-          </GestureHandlerRootView>
-        </ActionSheetProvider>
-      </SafeAreaProvider>
+                  <Stack.Group
+                    screenOptions={{
+                      presentation: 'modal',
+                    }}>
+                    <Stack.Screen
+                      name="EditLogType"
+                      component={EditLogTypeModal}
+                    />
+
+                    <Stack.Screen name="AddLog" component={AddLogModal} />
+                  </Stack.Group>
+                </Stack.Navigator>
+              </NavigationContainer>
+            </ActionSheetProvider>
+          </SafeAreaProvider>
+        </BottomSheetModalProvider>
+      </GestureHandlerRootView>
     </Provider>
   );
 }

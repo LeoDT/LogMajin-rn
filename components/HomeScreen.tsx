@@ -1,13 +1,12 @@
-import {SafeAreaView} from 'react-native-safe-area-context';
-
 import {useState} from 'react';
-
 import {StyleSheet, useWindowDimensions} from 'react-native';
+
+import {SafeAreaView} from 'react-native-safe-area-context';
 import {TabView, SceneMap} from 'react-native-tab-view';
 
-import {MainTab} from './MainTab';
 import {CreateScreen} from './CreateScreen';
 import {LogsScreen} from './LogsScreen';
+import {MainTab} from './MainTab';
 
 const renderScene = SceneMap({
   create: CreateScreen,

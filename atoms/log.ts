@@ -1,4 +1,4 @@
-import {omit, keyBy, groupBy, orderBy} from 'lodash-es';
+import {omit, keyBy, groupBy, orderBy, every, isEmpty} from 'lodash-es';
 
 import {atom} from 'jotai';
 import {nanoid} from 'nanoid';
@@ -95,8 +95,45 @@ export const loadLogsAtom = atom(null, async (get, set) => {
   );
 });
 
-export const logSectionsAtom = atom(get => {
+export interface LogFilter {
+  contain?: string;
+  logTypes?: LogType[];
+  from?: Date;
+  to?: Date;
+}
+
+export const filterAtom = atom<LogFilter>({});
+
+export function isFilterEmpty(filter: LogFilter) {
+  return isEmpty(filter) || Object.values(filter).every(v => !v);
+}
+
+export const filteredLogsAtom = atom(get => {
   const logs = get(logsAtom);
+  const filter = get(filterAtom);
+
+  if (isFilterEmpty(filter)) {
+    return logs;
+  }
+
+  return logs.filter(l => {
+    const hits = [
+      filter.contain
+        ? l.content.toLowerCase().search(filter.contain.toLowerCase()) !== -1
+        : true,
+      filter.logTypes && filter.logTypes.length > 0
+        ? filter.logTypes.indexOf(l.logType) !== -1
+        : true,
+      filter.from ? l.createAt >= filter.from : true,
+      filter.to ? l.createAt <= filter.to : true,
+    ];
+
+    return every(hits, Boolean);
+  });
+});
+
+export const filteredLogSectionsAtom = atom(get => {
+  const logs = get(filteredLogsAtom);
   const groups = groupBy(logs, l => l.createAt.toDateString());
   const sections: Array<{title: string; data: Log[]}> = [];
 
