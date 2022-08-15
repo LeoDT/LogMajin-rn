@@ -1,26 +1,21 @@
+import {forwardRef, useEffect, useMemo, useRef, useState} from 'react';
+import {View, StyleSheet, TextInput, Pressable, Keyboard} from 'react-native';
+
+import BottomSheet from '@gorhom/bottom-sheet';
 import type {NativeStackScreenProps} from '@react-navigation/native-stack';
 import {useAtomValue, useSetAtom} from 'jotai';
-import {forwardRef, useEffect, useMemo, useRef, useState} from 'react';
-import {
-  View,
-  StyleSheet,
-  TextInput,
-  Button,
-  Pressable,
-  FlatList,
-  Keyboard,
-} from 'react-native';
+import DraggableFlatList, {
+  ScaleDecorator,
+} from 'react-native-draggable-flatlist';
 import {SafeAreaView} from 'react-native-safe-area-context';
-import BottomSheet from '@gorhom/bottom-sheet';
 
 import {logTypeFamily} from '../atoms/logType';
 import {colors, colorValueForLogType} from '../colors';
 import {HomeStackParamList} from '../types';
-
-import {LogTypeThemeContext} from './LogTypeThemeColorContext';
+import {AddLogTypePlaceholderSheet} from './AddLogTypePlaceholderSheet';
 import {Close} from './Close';
 import {LogTypePlaceholderEditor} from './LogTypePlaceholderEditor';
-import {AddLogTypePlaceholderSheet} from './AddLogTypePlaceholderSheet';
+import {LogTypeThemeContext} from './LogTypeThemeColorContext';
 
 const AddLogTypePlaceholderSheetForward = forwardRef(
   AddLogTypePlaceholderSheet,
@@ -79,18 +74,29 @@ export function EditLogTypeModal({route, navigation}: Props): JSX.Element {
           />
         </View>
 
-        <FlatList
-          style={styles.placeholderList}
+        <DraggableFlatList
+          keyExtractor={item => item.id}
+          containerStyle={styles.placeholderList}
           data={logType.placeholders}
           removeClippedSubviews={false}
-          renderItem={({item, index}) => (
-            <View
-              style={[
-                styles.placeholderItem,
-                index === 0 ? styles.firstPlaceholderItem : null,
-              ]}>
-              <LogTypePlaceholderEditor logType={logType} placeholder={item} />
-            </View>
+          onDragEnd={({data}) => {
+            setLogType({...logType, placeholders: data});
+          }}
+          renderItem={({item, index, drag, isActive}) => (
+            <ScaleDecorator activeScale={1.05}>
+              <Pressable
+                onLongPress={drag}
+                disabled={isActive}
+                style={[
+                  styles.placeholderItem,
+                  index === 0 ? styles.firstPlaceholderItem : null,
+                ]}>
+                <LogTypePlaceholderEditor
+                  logType={logType}
+                  placeholder={item}
+                />
+              </Pressable>
+            </ScaleDecorator>
           )}
         />
 

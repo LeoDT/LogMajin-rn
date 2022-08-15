@@ -1,17 +1,21 @@
-import {useCallback} from 'react';
+import {useCallback, useMemo} from 'react';
 import {
   View,
   TextInput,
   StyleSheet,
   TouchableOpacity,
   Text,
+  Pressable,
 } from 'react-native';
 
-import {colors} from '../colors';
-import HandleSvg from '../assets/handle.svg';
+import DraggableFlatList, {
+  OpacityDecorator,
+} from 'react-native-draggable-flatlist';
 
-import {useLogTypeTheme} from './LogTypeThemeColorContext';
+import HandleSvg from '../assets/handle.svg';
+import {colors} from '../colors';
 import {Close} from './Close';
+import {useLogTypeTheme} from './LogTypeThemeColorContext';
 
 interface Props {
   options: string[];
@@ -32,37 +36,60 @@ export function SelectOptionsEditor({options, onChange}: Props): JSX.Element {
     },
     [options, onChange],
   );
+  const listData = useMemo(
+    () => options.map((o, i) => ({option: o, index: i})),
+    [options],
+  );
 
   return (
     <View>
-      {options?.map((o, i) => (
-        <View key={i} style={styles.item}>
-          <HandleSvg width={20} height={20} fill={colors.gray['500']} />
+      <DraggableFlatList
+        containerStyle={styles.list}
+        data={listData}
+        keyExtractor={({option, index}) => `${option}_${index}`}
+        onDragEnd={({data}) => {
+          onChange(data.map(({option}) => option));
+        }}
+        renderItem={({item, drag}) => (
+          <OpacityDecorator activeOpacity={0.6}>
+            <View style={styles.item}>
+              <Pressable onPressIn={drag}>
+                <HandleSvg width={20} height={20} fill={colors.gray['500']} />
+              </Pressable>
 
-          <TextInput
-            placeholder={o === '' ? 'New Option' : ''}
-            value={o}
-            onChangeText={v => handleChange(v, i)}
-            style={styles.input}
-          />
+              <TextInput
+                placeholder={item.option === '' ? 'New Option' : ''}
+                value={item.option}
+                onChangeText={v => handleChange(v, item.index)}
+                style={styles.input}
+              />
 
-          {options.length > 1 ? (
-            <Close style={styles.close} onPress={() => handleRemove(i)} />
-          ) : null}
-        </View>
-      ))}
+              {options.length > 1 ? (
+                <Close
+                  style={styles.close}
+                  onPress={() => handleRemove(item.index)}
+                />
+              ) : null}
+            </View>
+          </OpacityDecorator>
+        )}
+      />
 
       <TouchableOpacity
+        style={styles.addNew}
         onPress={() => {
           handleChange('New Option', options.length);
         }}>
-        <Text style={[styles.addNew, {color: themeColor}]}>Add New</Text>
+        <Text style={[styles.addNewText, {color: themeColor}]}>Add New</Text>
       </TouchableOpacity>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
+  list: {
+    flex: 1,
+  },
   item: {
     flexDirection: 'row',
     borderBottomWidth: 1,
@@ -78,10 +105,14 @@ const styles = StyleSheet.create({
   },
   close: {
     flexGrow: 0,
-    width: 20,
+    width: 28,
+    height: 28,
     alignItems: 'center',
   },
   addNew: {
+    alignSelf: 'flex-start',
+  },
+  addNewText: {
     fontSize: 18,
     marginVertical: 13,
   },

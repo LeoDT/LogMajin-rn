@@ -1,6 +1,8 @@
-import {useSetAtom} from 'jotai';
 import {StyleSheet, Text, View, TextInput} from 'react-native';
 
+import {useSetAtom} from 'jotai';
+
+import MoreSvg from '../assets/more.svg';
 import {
   LogType,
   Placeholder,
@@ -9,9 +11,6 @@ import {
 } from '../atoms/logType';
 import {colors} from '../colors';
 import {showPlaceholderType} from '../utils/logType';
-
-import MoreSvg from '../assets/more.svg';
-
 import {SelectOptionsEditor} from './SelectOptionsEditor';
 
 interface Props {
