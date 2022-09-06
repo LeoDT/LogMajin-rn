@@ -8,6 +8,14 @@ export const logMMKVStorage = new MMKVLoader()
   .withInstanceID('log')
   .initialize();
 
+export const logIndexMMKVStorage = new MMKVLoader()
+  .withInstanceID('logIndex')
+  .initialize();
+
+export const logInputHistoryMMKVStorage = new MMKVLoader()
+  .withInstanceID('logInputHistory')
+  .initialize();
+
 export function makeStorageWithMMKV<Value extends object>(mmkv: MMKVInstance) {
   return {
     getItem: (k: string) => {
@@ -28,6 +36,12 @@ export function makeStorageWithMMKV<Value extends object>(mmkv: MMKVInstance) {
       mmkv.removeItem(k);
     },
 
-    delayInit: true,
+    delayInit: false,
   };
+}
+
+export function clearLogStores() {
+  logMMKVStorage.clearStore();
+  logIndexMMKVStorage.clearStore();
+  logInputHistoryMMKVStorage.clearStore();
 }

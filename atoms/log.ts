@@ -1,10 +1,24 @@
-import {omit, keyBy, groupBy, orderBy, every, isEmpty} from 'lodash-es';
+import {omit, groupBy, orderBy, every, isEmpty, uniq} from 'lodash-es';
 
 import {atom} from 'jotai';
 import {nanoid} from 'nanoid';
 
-import {makeStorageWithMMKV, logMMKVStorage} from '../utils/storage';
-import {LogType, logTypesAtom, PlaceholderType} from './logType';
+import {
+  makeStorageWithMMKV,
+  logMMKVStorage,
+  logInputHistoryMMKVStorage,
+  logIndexMMKVStorage,
+} from '../utils/storage';
+import {
+  LogType,
+  PlaceholderType,
+  logTypeFamily,
+  needRecordHistoryPlaceholderTypes,
+  Placeholder,
+  getLogTypeHash,
+  recordLogTypeRevisionCallback,
+  getLatestLogTypeRevisionCallback,
+} from './logType';
 
 export interface PlaceholderValue<T extends string = string> {
   id: string;
@@ -23,6 +37,7 @@ export interface Log {
   createAt: Date;
   placeholderValues: Array<PlaceholderValue>;
   content: string;
+  revisionId: string;
 }
 
 export interface SerializedLog {
@@ -31,20 +46,28 @@ export interface SerializedLog {
   createAt: Date;
   placeholderValues: Array<PlaceholderValue>;
   content: string;
+
+  // revision is a logType snapshot identified with logTypeHash
+  // revision is created when new log is commited
+  revisionId: string;
+  logTypeHash: string;
 }
 
 export const logStorage = makeStorageWithMMKV<SerializedLog>(logMMKVStorage);
 
 export function makeDefaultLog(logType: LogType): Log {
+  const values = logType.placeholders.map(p => ({
+    id: p.id,
+    value: p.kind === PlaceholderType.Text ? p.content : '',
+  }));
+
   return {
     logType,
     id: nanoid(),
-    placeholderValues: logType.placeholders.map(p => ({
-      id: p.id,
-      value: p.kind === PlaceholderType.Text ? p.content : '',
-    })),
+    placeholderValues: values,
     createAt: new Date(),
-    content: '',
+    content: values.map(p => p.value).join(' '),
+    revisionId: '',
   };
 }
 
@@ -63,23 +86,66 @@ export function makeLogAtom(logType: LogType) {
   return a;
 }
 
+export function recordLogInputHistory(log: Log) {
+  log.logType.placeholders
+    .filter(p => needRecordHistoryPlaceholderTypes.includes(p.kind))
+    .forEach(p => {
+      const value = log.placeholderValues.find(v => v.id === p.id);
+
+      if (value) {
+        const history = logInputHistoryMMKVStorage.getArray(p.id) ?? [];
+
+        history.unshift(value.value);
+
+        logInputHistoryMMKVStorage.setArrayAsync(p.id, uniq(history));
+      }
+    });
+}
+
+export function loadLogInputHistory(placeholder: Placeholder): string[] {
+  const history =
+    (logInputHistoryMMKVStorage.getArray(placeholder.id) as string[]) ?? [];
+
+  return history;
+}
+
 export const commitLogAtom = atom(null, (get, set, log: Log) => {
-  logStorage.setItem(log.id, {
+  const lastLogId = logIndexMMKVStorage.getArray(log.logType.id)?.[0] as string;
+  const lastLog = (
+    lastLogId ? logMMKVStorage.getMap(lastLogId) : null
+  ) as SerializedLog | null;
+
+  let revision = getLatestLogTypeRevisionCallback(get, set, log.logType);
+  let hash = getLogTypeHash(revision);
+
+  if (lastLog?.logTypeHash !== hash) {
+    revision = recordLogTypeRevisionCallback(get, set, log.logType);
+    hash = getLogTypeHash(revision);
+  }
+
+  logMMKVStorage.setMap(log.id, {
     ...omit(log, ['logType']),
     logTypeId: log.logType.id,
+    revisionId: revision.id,
+    logTypeHash: hash,
   });
 
+  const logIndexForLogType = logIndexMMKVStorage.getArray(log.logType.id) ?? [];
+  logIndexMMKVStorage.setArray(log.logType.id, [log.id, ...logIndexForLogType]);
+
   set(logsAtom, [log, ...get(logsAtom)]);
+
+  recordLogInputHistory(log);
 });
 
 export const logsAtom = atom<Log[]>([]);
 
 export const loadLogsAtom = atom(null, async (get, set) => {
+  console.log('load logs');
+
   const logs = (await logMMKVStorage.indexer.maps.getAll()) as Array<
     [string, SerializedLog]
   >;
-  const logTypes = get(logTypesAtom);
-  const logTypeIndex = keyBy(logTypes, 'id');
 
   set(
     logsAtom,
@@ -87,7 +153,7 @@ export const loadLogsAtom = atom(null, async (get, set) => {
       logs.map(([_, log]) => ({
         ...omit(log, ['logTypeId']),
         createAt: new Date(log.createAt),
-        logType: logTypeIndex[log.logTypeId],
+        logType: get(logTypeFamily({id: log.logTypeId})),
       })),
       ['createAt'],
       ['desc'],
@@ -122,7 +188,7 @@ export const filteredLogsAtom = atom(get => {
         ? l.content.toLowerCase().search(filter.contain.toLowerCase()) !== -1
         : true,
       filter.logTypes && filter.logTypes.length > 0
-        ? filter.logTypes.indexOf(l.logType) !== -1
+        ? filter.logTypes.includes(l.logType)
         : true,
       filter.from ? l.createAt >= filter.from : true,
       filter.to ? l.createAt <= filter.to : true,

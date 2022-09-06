@@ -3,7 +3,7 @@ import {useCallback, useMemo} from 'react';
 import {StyleSheet, Text, View} from 'react-native';
 
 import BottomSheet from '@gorhom/bottom-sheet';
-import {PrimitiveAtom, useAtom} from 'jotai';
+import {useAtom, WritableAtom} from 'jotai';
 
 import {Log, PlaceholderValue} from '../atoms/log';
 import {NeedInputPlaceholder} from '../atoms/logType';
@@ -13,7 +13,7 @@ import {LogTypePlaceholderInput} from './LogTypePlaceholderInput';
 import {LogTypeThemedLinkButton} from './LogTypeThemedLinkButton';
 
 interface Props {
-  logAtom: PrimitiveAtom<Log>;
+  logAtom: WritableAtom<Log, Partial<Log>>;
   placeholders: NeedInputPlaceholder[];
 
   activePlaceholder: NeedInputPlaceholder;
@@ -73,7 +73,10 @@ export function LogTypePlaceholderInputWizard({
   );
 
   return (
-    <BottomSheet snapPoints={['30%']} style={styles.container}>
+    <BottomSheet
+      snapPoints={['30%']}
+      style={styles.container}
+      enableOverDrag={false}>
       <View style={styles.tools}>
         <Text style={styles.name}>{activePlaceholder.name}</Text>
         <Text style={styles.type}>

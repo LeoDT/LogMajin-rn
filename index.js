@@ -1,10 +1,17 @@
 /**
  * @format
  */
-
-import 'react-native-get-random-values';
+import React from 'react';
 import {AppRegistry} from 'react-native';
+
+import {Provider} from 'jotai';
+import 'react-native-get-random-values';
+
 import App from './App';
 import {name as appName} from './app.json';
 
-AppRegistry.registerComponent(appName, () => App);
+function Root() {
+  return React.createElement(Provider, {children: React.createElement(App)});
+}
+
+AppRegistry.registerComponent(appName, () => Root);

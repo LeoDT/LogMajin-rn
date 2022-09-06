@@ -1,7 +1,7 @@
 import {forwardRef, useEffect, useMemo, useRef, useState} from 'react';
 import {View, StyleSheet, TextInput, Pressable, Keyboard} from 'react-native';
 
-import BottomSheet from '@gorhom/bottom-sheet';
+import BottomSheet, {BottomSheetModal} from '@gorhom/bottom-sheet';
 import type {NativeStackScreenProps} from '@react-navigation/native-stack';
 import {useAtomValue, useSetAtom} from 'jotai';
 import DraggableFlatList, {
@@ -14,6 +14,7 @@ import {colors, colorValueForLogType} from '../colors';
 import {HomeStackParamList} from '../types';
 import {AddLogTypePlaceholderSheet} from './AddLogTypePlaceholderSheet';
 import {Close} from './Close';
+import {ColorPicker} from './ColorPicker';
 import {LogTypePlaceholderEditor} from './LogTypePlaceholderEditor';
 import {LogTypeThemeContext} from './LogTypeThemeColorContext';
 
@@ -37,6 +38,8 @@ export function EditLogTypeModal({route, navigation}: Props): JSX.Element {
   const sheetRef = useRef<BottomSheet>(null);
   const [sheetPadding, setSheetPadding] = useState(SHEET_PADDING);
 
+  const colorAndIconSheetRef = useRef<BottomSheetModal>(null);
+
   useEffect(() => {
     const show = Keyboard.addListener('keyboardDidShow', () => {
       sheetRef.current?.close();
@@ -58,7 +61,10 @@ export function EditLogTypeModal({route, navigation}: Props): JSX.Element {
     <LogTypeThemeContext.Provider value={themeColor}>
       <SafeAreaView style={[styles.container, {paddingBottom: sheetPadding}]}>
         <View style={styles.header}>
-          <Pressable style={[styles.icon, {backgroundColor: themeColor}]} />
+          <Pressable
+            onPress={() => colorAndIconSheetRef.current?.present()}
+            style={[styles.icon, {backgroundColor: themeColor}]}
+          />
           <TextInput
             value={logType.name}
             onChangeText={v => {
@@ -99,6 +105,15 @@ export function EditLogTypeModal({route, navigation}: Props): JSX.Element {
             </ScaleDecorator>
           )}
         />
+
+        <BottomSheetModal snapPoints={[260]} ref={colorAndIconSheetRef}>
+          <ColorPicker
+            value={logType.color}
+            onChange={color => {
+              setLogType({...logType, color});
+            }}
+          />
+        </BottomSheetModal>
 
         <AddLogTypePlaceholderSheetForward logType={logType} ref={sheetRef} />
       </SafeAreaView>

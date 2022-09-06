@@ -46,7 +46,7 @@ export function SelectOptionsEditor({options, onChange}: Props): JSX.Element {
       <DraggableFlatList
         containerStyle={styles.list}
         data={listData}
-        keyExtractor={({option, index}) => `${option}_${index}`}
+        keyExtractor={({index}) => `${index}`}
         onDragEnd={({data}) => {
           onChange(data.map(({option}) => option));
         }}

@@ -1,5 +1,12 @@
-import {StyleSheet, Text, View, TextInput} from 'react-native';
+import {
+  StyleSheet,
+  Text,
+  View,
+  TextInput,
+  TouchableOpacity,
+} from 'react-native';
 
+import {useActionSheet} from '@expo/react-native-action-sheet';
 import {useSetAtom} from 'jotai';
 
 import MoreSvg from '../assets/more.svg';
@@ -7,6 +14,7 @@ import {
   LogType,
   Placeholder,
   PlaceholderType,
+  removePlaceholderAtom,
   updatePlaceholderAtom,
 } from '../atoms/logType';
 import {colors} from '../colors';
@@ -23,6 +31,8 @@ export function LogTypePlaceholderEditor({
   placeholder,
 }: Props): JSX.Element {
   const updatePlaceholder = useSetAtom(updatePlaceholderAtom);
+  const removePlaceholder = useSetAtom(removePlaceholderAtom);
+  const {showActionSheetWithOptions} = useActionSheet();
 
   const renderDetail = () => {
     switch (placeholder.kind) {
@@ -73,6 +83,15 @@ export function LogTypePlaceholderEditor({
           style={styles.name}
           value={placeholder.name}
           placeholder="Name"
+          onChangeText={v => {
+            updatePlaceholder({
+              logTypeId: logType.id,
+              placeholder,
+              update: {
+                name: v,
+              },
+            });
+          }}
         />
       ) : null}
 
@@ -81,12 +100,26 @@ export function LogTypePlaceholderEditor({
       <View style={styles.metas}>
         <Text style={styles.type}>{showPlaceholderType(placeholder.kind)}</Text>
 
-        <MoreSvg
+        <TouchableOpacity
           style={styles.more}
-          width={20}
-          height={20}
-          fill={colors.gray['500']}
-        />
+          onPress={() => {
+            showActionSheetWithOptions(
+              {
+                options: ['Delete', 'Cancel'],
+                destructiveButtonIndex: 0,
+                cancelButtonIndex: 1,
+              },
+              i => {
+                switch (i) {
+                  case 0:
+                    removePlaceholder({logTypeId: logType.id, placeholder});
+                    break;
+                }
+              },
+            );
+          }}>
+          <MoreSvg width={20} height={20} fill={colors.gray['500']} />
+        </TouchableOpacity>
       </View>
     </View>
   );

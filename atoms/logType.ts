@@ -1,5 +1,7 @@
-import {atom} from 'jotai';
-import {atomFamily, atomWithStorage} from 'jotai/utils';
+import {without} from 'lodash-es';
+
+import {atom, Getter, Setter} from 'jotai';
+import {atomFamily} from 'jotai/utils';
 import {nanoid} from 'nanoid';
 
 import {Color, randomColorForLogType} from '../colors';
@@ -10,6 +12,13 @@ export enum PlaceholderType {
   TextInput = 'text-input',
   Select = 'select',
 }
+
+export const needInputPlaceholderTypes = [
+  PlaceholderType.TextInput,
+  PlaceholderType.Select,
+];
+
+export const needRecordHistoryPlaceholderTypes = [PlaceholderType.TextInput];
 
 export interface BasePlaceholder {
   kind: PlaceholderType;
@@ -47,30 +56,32 @@ export interface LogType {
   createAt: Date;
   updateAt: Date;
   color: Color;
+
+  revision: number;
+  archiveAt?: Date;
 }
 
 export const logTypeStorage = makeStorageWithMMKV<LogType>(logTypeMMKVStorage);
 
 export const logTypesAtom = atom<LogType[]>([]);
-logTypesAtom.onMount = set => {
-  console.log('onmount');
 
-  (async () => {
-    const items = (await logTypeMMKVStorage.indexer.maps.getAll()) as Array<
-      [string, LogType]
-    >;
+export const loadLogTypesAtom = atom(null, (get, set) => {
+  console.log('load logTypes');
 
-    console.log(`keys ${items}`);
+  const itemIds = logTypeMMKVStorage.getArray('all') as string[];
+  const items = logTypeMMKVStorage
+    .getMultipleItems<LogType>(itemIds, 'map')
+    .map(([_, v]) => v);
 
-    set(
-      items?.map(([, v]) => {
-        logTypeFamily(v);
-
-        return v;
+  set(
+    logTypesAtom,
+    items
+      ?.filter((v): v is LogType => Boolean(v))
+      .map(v => {
+        return get(logTypeFamily(v));
       }),
-    );
-  })();
-};
+  );
+});
 
 export function makeDefaultLogType(id: string): LogType {
   const timestamp = new Date();
@@ -89,33 +100,122 @@ export function makeDefaultLogType(id: string): LogType {
         id: nanoid(),
       },
     ],
+    revision: 0,
     createAt: timestamp,
     updateAt: timestamp,
     color: randomColorForLogType(),
   };
 }
 
-export const logTypeFamily = atomFamily(
-  (params: Partial<LogType> & {id: string}) => {
-    const storageAtom = atomWithStorage(
-      params.id,
-      Object.assign(makeDefaultLogType(params.id), params),
-      logTypeStorage,
-    );
+/*
+   logType mmkv instance:
+   xxxyyyzzz for latest log type
+   xxxyyyzzz:1 for log type revision 1 with a log
+   all array of latest log type ids
+ */
 
-    return atom(
-      get => get(storageAtom),
-      (get, set, update: LogType) => {
-        set(storageAtom, {
-          ...get(storageAtom),
+interface LogTypeFamilyParams extends Partial<LogType> {
+  id: string;
+
+  persistImmediate?: boolean;
+}
+
+interface LogTypeUpdateParams extends Partial<LogType> {
+  shouldUpdateTimestamp?: boolean;
+}
+
+// return an atom that auto persist
+export const logTypeFamily = atomFamily(
+  ({persistImmediate = true, ...params}: LogTypeFamilyParams) => {
+    const defaultValue = {...makeDefaultLogType(params.id), ...params};
+    const persist = (id: string, lt: LogType) => {
+      logTypeMMKVStorage.setMap(id, lt);
+
+      const index = logTypeMMKVStorage.getArray('all') ?? [];
+      if (!index.includes(id)) {
+        logTypeMMKVStorage.setArray('all', [id, ...index]);
+      }
+    };
+
+    const anAtom = atom<LogType, LogTypeUpdateParams>(
+      defaultValue,
+      (get, set, {shouldUpdateTimestamp, ...update}: LogTypeUpdateParams) => {
+        const logType = get(anAtom);
+        const newLogType: LogType = {
+          ...logType,
           ...update,
-          updateAt: new Date(),
-        });
+        };
+
+        if (shouldUpdateTimestamp) {
+          newLogType.updateAt = new Date();
+        }
+
+        persist(logType.id, newLogType);
+        set(anAtom, newLogType);
       },
     );
+
+    if (persistImmediate) {
+      persist(defaultValue.id, defaultValue);
+    }
+
+    return anAtom;
   },
   (a, b) => a.id === b.id,
 );
+
+export function isLogTypeRevision(logType: LogType): boolean {
+  return logType.id.includes(':');
+}
+
+export function assertNotRevision(logType: LogType) {
+  if (__DEV__ && isLogTypeRevision(logType)) {
+    throw Error(`${logType.id} is already a revision`);
+  }
+}
+
+export function logTypeIdWithRevision(logType: LogType, revision: number) {
+  assertNotRevision(logType);
+
+  return `${logType.id}:${revision}`;
+}
+
+export function recordLogTypeRevisionCallback(
+  _get: Getter,
+  set: Setter,
+  logType: LogType,
+): LogType {
+  assertNotRevision(logType);
+
+  const anAtom = logTypeFamily(logType);
+  const increasedRevision = logType.revision + 1;
+  const revision = {
+    ...logType,
+    id: logTypeIdWithRevision(logType, increasedRevision),
+    revision: increasedRevision,
+  };
+
+  set(anAtom, {revision: increasedRevision, shouldUpdateTimestamp: false});
+
+  const revisionIndexKey = `${logType.id}_revisions`;
+  const revisionIndex = logTypeMMKVStorage.getArray(revisionIndexKey) ?? [];
+  logTypeMMKVStorage.setArray(revisionIndexKey, [
+    revision.id,
+    ...revisionIndex,
+  ]);
+
+  return revision;
+}
+
+export function getLatestLogTypeRevisionCallback(
+  get: Getter,
+  _set: Setter,
+  logType: LogType,
+): LogType {
+  return get(
+    logTypeFamily({id: logTypeIdWithRevision(logType, logType.revision)}),
+  );
+}
 
 export function getPlaceholderDefaults(t: PlaceholderType) {
   switch (t) {
@@ -131,6 +231,18 @@ export function getPlaceholderDefaults(t: PlaceholderType) {
     default:
       return {};
   }
+}
+
+export function isLogTypeNeedInput(logType: LogType): boolean {
+  return logType.placeholders.some(p =>
+    needInputPlaceholderTypes.includes(p.kind),
+  );
+}
+
+export function getLogTypeHash(lt: LogType): string {
+  return `${lt.id}:${lt.updateAt.valueOf()}:${lt.placeholders
+    .map(p => p.id)
+    .join(':')}`;
 }
 
 interface AddPlaceholderParams {
@@ -193,6 +305,32 @@ export const updatePlaceholderAtom = atom(
         newPlaceholder,
         ...logType.placeholders.slice(placeholderIndex + 1),
       ],
+    });
+  },
+);
+
+interface RemovePlaceholderParams {
+  logTypeId: string;
+  placeholder: Placeholder;
+}
+
+export const removePlaceholderAtom = atom(
+  null,
+  (get, set, {logTypeId, placeholder}: RemovePlaceholderParams) => {
+    const a = logTypeFamily({id: logTypeId});
+    const logType = get(a);
+
+    const placeholderIndex = logType.placeholders.findIndex(
+      p => p.id === placeholder.id,
+    );
+
+    if (placeholderIndex === -1) {
+      throw Error('no such placeholder in logType');
+    }
+
+    set(a, {
+      ...logType,
+      placeholders: without(logType.placeholders, placeholder),
     });
   },
 );

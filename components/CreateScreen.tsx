@@ -10,11 +10,16 @@ import {
 } from 'react-native';
 
 import {useNavigation} from '@react-navigation/native';
-import {useAtomValue} from 'jotai';
+import {useAtomValue, useSetAtom} from 'jotai';
 import {useAtomCallback} from 'jotai/utils';
 import {nanoid} from 'nanoid';
 
-import {logTypeFamily, logTypesAtom} from '../atoms/logType';
+import {commitLogAtom, makeDefaultLog} from '../atoms/log';
+import {
+  isLogTypeNeedInput,
+  logTypeFamily,
+  logTypesAtom,
+} from '../atoms/logType';
 import {colors} from '../colors';
 import {LogTypeItem} from './LogTypeItem';
 
@@ -34,6 +39,7 @@ export function CreateScreen(): JSX.Element {
       [navigation],
     ),
   );
+  const commitLog = useSetAtom(commitLogAtom);
   const {width} = useWindowDimensions();
   const listSize = useMemo(() => {
     const columns = width >= 225 * 2 ? 3 : 2;
@@ -65,9 +71,13 @@ export function CreateScreen(): JSX.Element {
             <TouchableOpacity
               activeOpacity={0.9}
               onPress={() => {
-                navigation.navigate('AddLog', {
-                  logTypeId: item.id,
-                });
+                if (isLogTypeNeedInput(item)) {
+                  navigation.navigate('AddLog', {
+                    logTypeId: item.id,
+                  });
+                } else {
+                  commitLog(makeDefaultLog(item));
+                }
               }}>
               <LogTypeItem logTypeId={item.id} />
             </TouchableOpacity>

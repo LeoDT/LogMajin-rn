@@ -1,10 +1,13 @@
 import {useCallback} from 'react';
-import {StyleSheet, View, TextInput} from 'react-native';
+import {StyleSheet, View, TextInput, Text} from 'react-native';
 
-import {PlaceholderValueTypes} from '../atoms/log';
+import {BottomSheetScrollView} from '@gorhom/bottom-sheet';
+
+import {loadLogInputHistory, PlaceholderValueTypes} from '../atoms/log';
 import {NeedInputPlaceholder, PlaceholderType} from '../atoms/logType';
 import {colors} from '../colors';
 import {ListSelect} from './ListSelect';
+import {LogTypeThemedLinkButton} from './LogTypeThemedLinkButton';
 
 interface Props<
   P extends NeedInputPlaceholder,
@@ -23,6 +26,8 @@ export function LogTypePlaceholderInput<
   const renderInput = useCallback(() => {
     switch (placeholder.kind) {
       case PlaceholderType.TextInput:
+        const history = loadLogInputHistory(placeholder);
+
         return (
           <View style={styles.textInputWrapper}>
             <TextInput
@@ -35,6 +40,28 @@ export function LogTypePlaceholderInput<
                 } as V)
               }
             />
+            {history.length > 0 ? (
+              <View style={styles.textInputHistory}>
+                <Text style={styles.textInputHistoryTitle}>History</Text>
+                <BottomSheetScrollView
+                  style={styles.textInputHistoryListWrapper}
+                  horizontal>
+                  {history.map((t, i) => (
+                    <LogTypeThemedLinkButton
+                      key={i}
+                      style={styles.textInputHistoryItem}
+                      title={t}
+                      onPress={() =>
+                        onChange({
+                          id: placeholder.id,
+                          value: t,
+                        } as V)
+                      }
+                    />
+                  ))}
+                </BottomSheetScrollView>
+              </View>
+            ) : null}
           </View>
         );
 
@@ -72,5 +99,23 @@ const styles = StyleSheet.create({
     fontSize: 14,
     paddingVertical: 0,
     paddingHorizontal: 10,
+  },
+  textInputHistory: {
+    flexDirection: 'row',
+    marginTop: 8,
+    alignItems: 'center',
+    paddingVertical: 5,
+  },
+  textInputHistoryTitle: {
+    marginRight: 15,
+  },
+  textInputHistoryListWrapper: {
+    flex: 1,
+  },
+  textInputHistoryList: {
+    flex: 1,
+  },
+  textInputHistoryItem: {
+    marginRight: 15,
   },
 });

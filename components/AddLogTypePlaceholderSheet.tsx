@@ -1,17 +1,12 @@
-import {useSetAtom} from 'jotai';
-import {useEffect, useRef} from 'react';
-import {
-  StyleSheet,
-  View,
-  Text,
-  TouchableHighlight,
-  Keyboard,
-} from 'react-native';
+import {ForwardedRef} from 'react';
+import {StyleSheet, Text, TouchableHighlight} from 'react-native';
+
 import BottomSheet, {BottomSheetFlatList} from '@gorhom/bottom-sheet';
+import {useSetAtom} from 'jotai';
 
 import {addPlaceholderAtom, LogType, PlaceholderType} from '../atoms/logType';
-import {showPlaceholderType} from '../utils/logType';
 import {colors} from '../colors';
+import {showPlaceholderType} from '../utils/logType';
 
 interface Props {
   logType: LogType;
@@ -23,7 +18,10 @@ const placeholders = Object.values(PlaceholderType).map(v => ({
   value: v,
 }));
 
-export function AddLogTypePlaceholderSheet({logType}: Props, ref): JSX.Element {
+export function AddLogTypePlaceholderSheet(
+  {logType}: Props,
+  ref: ForwardedRef<BottomSheet>,
+): JSX.Element {
   const addLogTypePlaceholder = useSetAtom(addPlaceholderAtom);
 
   return (
