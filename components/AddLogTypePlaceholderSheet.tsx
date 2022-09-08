@@ -3,10 +3,10 @@ import {StyleSheet, Text, TouchableHighlight} from 'react-native';
 
 import BottomSheet, {BottomSheetFlatList} from '@gorhom/bottom-sheet';
 import {useSetAtom} from 'jotai';
+import {useTranslation} from 'react-i18next';
 
 import {addPlaceholderAtom, LogType, PlaceholderType} from '../atoms/logType';
 import {colors} from '../colors';
-import {showPlaceholderType} from '../utils/logType';
 
 interface Props {
   logType: LogType;
@@ -14,7 +14,7 @@ interface Props {
 
 const placeholders = Object.values(PlaceholderType).map(v => ({
   id: v,
-  text: showPlaceholderType(v),
+  text: `placeholderType.${v}`,
   value: v,
 }));
 
@@ -22,6 +22,7 @@ export function AddLogTypePlaceholderSheet(
   {logType}: Props,
   ref: ForwardedRef<BottomSheet>,
 ): JSX.Element {
+  const {t} = useTranslation();
   const addLogTypePlaceholder = useSetAtom(addPlaceholderAtom);
 
   return (
@@ -41,7 +42,7 @@ export function AddLogTypePlaceholderSheet(
             onPress={() =>
               addLogTypePlaceholder({logTypeId: logType.id, type: item.value})
             }>
-            <Text style={styles.itemText}>{item.text}</Text>
+            <Text style={styles.itemText}>{t(item.text)}</Text>
           </TouchableHighlight>
         )}
       />

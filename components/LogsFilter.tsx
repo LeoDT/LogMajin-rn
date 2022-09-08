@@ -16,6 +16,7 @@ import {
   BottomSheetScrollView,
 } from '@gorhom/bottom-sheet';
 import {useAtom, useAtomValue} from 'jotai';
+import {useTranslation} from 'react-i18next';
 
 import FilterSvg from '../assets/filter.svg';
 import {filterAtom} from '../atoms/log';
@@ -23,6 +24,7 @@ import {LogType, logTypesAtom} from '../atoms/logType';
 import {colors, colorValueForLogType} from '../colors';
 
 export function LogsFilter(): JSX.Element {
+  const {t} = useTranslation();
   const [detailOpen, setDetailOpen] = useState(false);
   const bottomRef = useRef<BottomSheetModal | null>(null);
   const logTypes = useAtomValue(logTypesAtom);
@@ -122,17 +124,19 @@ export function LogsFilter(): JSX.Element {
           <View style={[styles.filterItem, styles.dateFilter]}>
             <View style={styles.dateFilterItem}>
               <TextInput style={[styles.input, styles.dateFilterInput]} />
-              <Text style={styles.dateFilterText}>ago</Text>
+              <Text style={styles.dateFilterText}>{t('filter.ago')}</Text>
             </View>
             <View style={styles.dateFilterItem}>
               <TextInput style={[styles.input, styles.dateFilterInput]} />
-              <Text style={styles.dateFilterText}>ahead</Text>
+              <Text style={styles.dateFilterText}>{t('filter.ahead')}</Text>
             </View>
           </View>
 
           <View style={[styles.filterItem, styles.containFilter]}>
             <View style={styles.containFilterItem}>
-              <Text style={styles.containFilterText}>Contain</Text>
+              <Text style={styles.containFilterText}>
+                {t('filter.contain')}
+              </Text>
               <TextInput
                 style={[styles.input, styles.containFilterInput]}
                 value={filter.contain ?? ''}
@@ -140,7 +144,9 @@ export function LogsFilter(): JSX.Element {
               />
             </View>
             <View style={styles.containFilterItem}>
-              <Text style={styles.containFilterText}>Without</Text>
+              <Text style={styles.containFilterText}>
+                {t('filter.without')}
+              </Text>
               <TextInput style={[styles.input, styles.containFilterInput]} />
             </View>
           </View>

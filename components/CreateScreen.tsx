@@ -13,6 +13,7 @@ import {useNavigation} from '@react-navigation/native';
 import {useAtomValue, useSetAtom} from 'jotai';
 import {useAtomCallback} from 'jotai/utils';
 import {nanoid} from 'nanoid';
+import {useTranslation} from 'react-i18next';
 
 import {commitLogAtom, makeDefaultLog} from '../atoms/log';
 import {
@@ -25,6 +26,7 @@ import {LogTypeItem} from './LogTypeItem';
 
 export function CreateScreen(): JSX.Element {
   const navigation = useNavigation();
+  const {t} = useTranslation();
   const logTypes = useAtomValue(logTypesAtom);
   const makeLogType = useAtomCallback(
     useCallback(
@@ -91,7 +93,7 @@ export function CreateScreen(): JSX.Element {
           onPress={() => {
             makeLogType();
           }}>
-          <Text style={styles.createText}>Create Type</Text>
+          <Text style={styles.createText}>{t('createLogType')}</Text>
         </TouchableHighlight>
       </View>
     </View>

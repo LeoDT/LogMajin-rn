@@ -214,10 +214,10 @@ export const filteredLogsAtom = atom(get => {
 export const filteredLogSectionsAtom = atom(get => {
   const logs = get(filteredLogsAtom);
   const groups = groupBy(logs, l => l.createAt.toDateString());
-  const sections: Array<{title: string; data: Log[]}> = [];
+  const sections: Array<{date: Date; data: Log[]}> = [];
 
-  Object.entries(groups).forEach(([k, v]) => {
-    sections.push({title: k, data: v});
+  Object.entries(groups).forEach(([_, v]) => {
+    sections.push({data: v, date: v[0].createAt});
   });
 
   return sections;

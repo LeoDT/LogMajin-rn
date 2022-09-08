@@ -13,6 +13,7 @@ import {
 } from '../atoms/log';
 import {logTypesAtom, PlaceholderType} from '../atoms/logType';
 import {colors, colorValueForLogType} from '../colors';
+import {useDateFormat, useDateTimeFormat} from '../i18n';
 import {LogsFilter} from './LogsFilter';
 
 const randomWords = [
@@ -30,6 +31,8 @@ const randomWords = [
 export function LogsScreen(): JSX.Element {
   const loadLogs = useSetAtom(loadLogsAtom);
   const sections = useAtomValue(filteredLogSectionsAtom);
+  const dateTimeFormat = useDateTimeFormat();
+  const dateFormat = useDateFormat();
   const [refreshing, setRefreshing] = useState(false);
   const commit = useSetAtom(commitLogAtom);
   const generateRandom = useAtomCallback(
@@ -96,8 +99,8 @@ export function LogsScreen(): JSX.Element {
         style={styles.list}
         onRefresh={refresh}
         sections={sections}
-        renderSectionHeader={({section: {title}}) => (
-          <Text style={styles.header}>{title}</Text>
+        renderSectionHeader={({section: {date}}) => (
+          <Text style={styles.header}>{dateFormat.format(date)}</Text>
         )}
         refreshing={refreshing}
         renderItem={({item}) => (
@@ -112,7 +115,9 @@ export function LogsScreen(): JSX.Element {
                 ]}>
                 {item.logType.name}
               </Text>
-              <Text style={styles.date}>{item.createAt.toLocaleString()}</Text>
+              <Text style={styles.date}>
+                {dateTimeFormat.format(item.createAt)}
+              </Text>
             </View>
           </View>
         )}

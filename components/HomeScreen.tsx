@@ -1,6 +1,7 @@
 import {useState} from 'react';
 import {StyleSheet, useWindowDimensions} from 'react-native';
 
+import {useTranslation} from 'react-i18next';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {TabView, SceneMap} from 'react-native-tab-view';
 
@@ -15,10 +16,11 @@ const renderScene = SceneMap({
 
 export function HomeScreen() {
   const layout = useWindowDimensions();
+  const {t} = useTranslation();
   const [index, setIndex] = useState(0);
   const [routes] = useState([
-    {key: 'create', title: 'Create'},
-    {key: 'logs', title: 'Logs'},
+    {key: 'create', title: t('createTab')},
+    {key: 'logs', title: t('logTab')},
   ]);
 
   return (

@@ -7,6 +7,7 @@ module.exports = {
   importOrder: [
     '^(lodash-es|react|react-native)$',
     '<THIRD_PARTY_MODULES>',
+    '^./i18n$',
     '^[./]',
   ],
   importOrderSeparation: true,
