@@ -1,4 +1,4 @@
-import {without} from 'lodash-es';
+import {without, isEqual} from 'lodash-es';
 
 import {atom, Getter, Setter} from 'jotai';
 import {atomFamily} from 'jotai/utils';
@@ -11,11 +11,13 @@ export enum PlaceholderType {
   Text = 'text',
   TextInput = 'text-input',
   Select = 'select',
+  Number = 'number',
 }
 
 export const needInputPlaceholderTypes = [
   PlaceholderType.TextInput,
   PlaceholderType.Select,
+  PlaceholderType.Number,
 ];
 
 export const needRecordHistoryPlaceholderTypes = [PlaceholderType.TextInput];
@@ -42,12 +44,21 @@ export interface SelectPlaceholder extends BasePlaceholder {
   multiple: boolean;
 }
 
+export interface NumberPlaceholder extends BasePlaceholder {
+  kind: PlaceholderType.Number;
+  placeholder?: string;
+}
+
 export type Placeholder =
   | TextPlaceholder
   | TextInputPlaceholder
-  | SelectPlaceholder;
+  | SelectPlaceholder
+  | NumberPlaceholder;
 
-export type NeedInputPlaceholder = TextInputPlaceholder | SelectPlaceholder;
+export type NeedInputPlaceholder =
+  | TextInputPlaceholder
+  | SelectPlaceholder
+  | NumberPlaceholder;
 
 export interface LogType {
   id: string;
@@ -61,26 +72,62 @@ export interface LogType {
   archiveAt?: Date;
 }
 
+export interface SerializedLogType
+  extends Omit<LogType, 'createAt' | 'updateAt' | 'archiveAt'> {
+  createAt: string;
+  updateAt: string;
+  archiveAt?: string;
+}
+
 export const logTypeStorage = makeStorageWithMMKV<LogType>(logTypeMMKVStorage);
 
-export const logTypesAtom = atom<LogType[]>([]);
+export function serializeLogType(logType: LogType): SerializedLogType {
+  return {
+    ...logType,
+    createAt: logType.createAt.toISOString(),
+    updateAt: logType.updateAt.toISOString(),
+    archiveAt: logType.archiveAt?.toISOString(),
+  };
+}
+
+export function deserializeLogType(logType: SerializedLogType): LogType {
+  return {
+    ...logType,
+    createAt: new Date(logType.createAt),
+    updateAt: new Date(logType.updateAt),
+    archiveAt: logType.archiveAt ? new Date(logType.archiveAt) : undefined,
+  };
+}
+
+export const logTypeIdsAtom = atom<string[]>([]);
+logTypeIdsAtom.onMount = setAtom => {
+  setAtom(logTypeMMKVStorage.getArray('all') ?? []);
+};
+
+export const logTypesAtom = atom<LogType[]>(get => {
+  const itemIds = get(logTypeIdsAtom);
+  const items = logTypeMMKVStorage
+    .getMultipleItems<SerializedLogType>(itemIds, 'map')
+    .map(([_, v]) => (v ? deserializeLogType(v) : null));
+
+  console.log(`loaded logType ids ${itemIds}`);
+
+  return items
+    ?.filter((v): v is LogType => Boolean(v))
+    .map(v => {
+      return get(logTypeFamily(v));
+    });
+});
 
 export const loadLogTypesAtom = atom(null, (get, set) => {
   console.log('load logTypes');
 
-  const itemIds = logTypeMMKVStorage.getArray('all') as string[];
-  const items = logTypeMMKVStorage
-    .getMultipleItems<LogType>(itemIds, 'map')
-    .map(([_, v]) => v);
+  const oldItemIds = get(logTypeIdsAtom);
+  const itemIds = (logTypeMMKVStorage.getArray('all') ?? []) as string[];
 
-  set(
-    logTypesAtom,
-    items
-      ?.filter((v): v is LogType => Boolean(v))
-      .map(v => {
-        return get(logTypeFamily(v));
-      }),
-  );
+  if (!isEqual(oldItemIds, itemIds)) {
+    set(logTypeIdsAtom, itemIds);
+  }
 });
 
 export function makeDefaultLogType(id: string): LogType {
@@ -129,7 +176,8 @@ export const logTypeFamily = atomFamily(
   ({persistImmediate = true, ...params}: LogTypeFamilyParams) => {
     const defaultValue = {...makeDefaultLogType(params.id), ...params};
     const persist = (id: string, lt: LogType) => {
-      logTypeMMKVStorage.setMap(id, lt);
+      console.log(`saved logType ${id}`);
+      logTypeMMKVStorage.setMap(id, serializeLogType(lt));
 
       const index = logTypeMMKVStorage.getArray('all') ?? [];
       if (!index.includes(id)) {
@@ -152,12 +200,15 @@ export const logTypeFamily = atomFamily(
 
         persist(logType.id, newLogType);
         set(anAtom, newLogType);
+        set(loadLogTypesAtom);
       },
     );
 
-    if (persistImmediate) {
-      persist(defaultValue.id, defaultValue);
-    }
+    anAtom.onMount = setAtom => {
+      if (persistImmediate && !logTypeMMKVStorage.getMap(params.id)) {
+        setAtom(defaultValue);
+      }
+    };
 
     return anAtom;
   },
@@ -176,6 +227,10 @@ export function assertNotRevision(logType: LogType) {
 
 export function logTypeIdWithRevision(logType: LogType, revision: number) {
   assertNotRevision(logType);
+
+  if (revision === 0) {
+    return logType.id;
+  }
 
   return `${logType.id}:${revision}`;
 }
@@ -197,6 +252,7 @@ export function recordLogTypeRevisionCallback(
 
   set(anAtom, {revision: increasedRevision, shouldUpdateTimestamp: false});
 
+  logTypeMMKVStorage.setMap(revision.id, serializeLogType(revision));
   const revisionIndexKey = `${logType.id}_revisions`;
   const revisionIndex = logTypeMMKVStorage.getArray(revisionIndexKey) ?? [];
   logTypeMMKVStorage.setArray(revisionIndexKey, [
@@ -208,12 +264,14 @@ export function recordLogTypeRevisionCallback(
 }
 
 export function getLatestLogTypeRevisionCallback(
-  get: Getter,
+  _get: Getter,
   _set: Setter,
   logType: LogType,
 ): LogType {
-  return get(
-    logTypeFamily({id: logTypeIdWithRevision(logType, logType.revision)}),
+  return deserializeLogType(
+    logTypeMMKVStorage.getMap(
+      logTypeIdWithRevision(logType, logType.revision),
+    ) as SerializedLogType,
   );
 }
 
@@ -226,6 +284,7 @@ export function getPlaceholderDefaults(t: PlaceholderType) {
       return {content: ''};
 
     case PlaceholderType.TextInput:
+    case PlaceholderType.Number:
       return {};
 
     default:

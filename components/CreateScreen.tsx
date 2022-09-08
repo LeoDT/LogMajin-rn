@@ -32,7 +32,7 @@ export function CreateScreen(): JSX.Element {
         const id = nanoid();
         const atom = logTypeFamily({id});
 
-        set(logTypesAtom, [get(atom), ...get(logTypesAtom)]);
+        /* set(logTypesAtom, [get(atom), ...get(logTypesAtom)]); */
 
         navigation.navigate('EditLogType', {logTypeId: id});
       },

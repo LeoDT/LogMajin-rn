@@ -70,6 +70,7 @@ export function LogTypePlaceholderEditor({
           />
         );
       case PlaceholderType.TextInput:
+      case PlaceholderType.Number:
         return null;
       default:
         return null;

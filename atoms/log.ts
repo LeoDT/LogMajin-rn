@@ -20,7 +20,7 @@ import {
   getLatestLogTypeRevisionCallback,
 } from './logType';
 
-export interface PlaceholderValue<T extends string = string> {
+export interface PlaceholderValue<T = string> {
   id: string;
   value: T;
 }
@@ -29,6 +29,7 @@ export interface PlaceholderValueTypes {
   [PlaceholderType.Text]: undefined;
   [PlaceholderType.TextInput]: PlaceholderValue<string>;
   [PlaceholderType.Select]: PlaceholderValue<string>;
+  [PlaceholderType.Number]: PlaceholderValue<string>;
 }
 
 export interface Log {
@@ -40,20 +41,38 @@ export interface Log {
   revisionId: string;
 }
 
-export interface SerializedLog {
-  id: string;
+export interface SerializedLog extends Omit<Log, 'logType' | 'createAt'> {
   logTypeId: string;
-  createAt: Date;
-  placeholderValues: Array<PlaceholderValue>;
-  content: string;
+  createAt: string;
 
   // revision is a logType snapshot identified with logTypeHash
   // revision is created when new log is commited
-  revisionId: string;
   logTypeHash: string;
 }
 
 export const logStorage = makeStorageWithMMKV<SerializedLog>(logMMKVStorage);
+
+export function serializeLog(
+  log: Log,
+  revision: LogType,
+  hash?: string,
+): SerializedLog {
+  return {
+    ...omit(log, ['logType']),
+    logTypeId: log.logType.id,
+    createAt: log.createAt.toISOString(),
+    logTypeHash: hash ?? getLogTypeHash(revision),
+    revisionId: revision.id,
+  };
+}
+
+export function deserializeLog(log: SerializedLog, logType: LogType): Log {
+  return {
+    ...omit(log, ['logTypeId', 'logTypeHash']),
+    createAt: new Date(log.createAt),
+    logType,
+  };
+}
 
 export function makeDefaultLog(logType: LogType): Log {
   const values = logType.placeholders.map(p => ({
@@ -119,16 +138,12 @@ export const commitLogAtom = atom(null, (get, set, log: Log) => {
   let hash = getLogTypeHash(revision);
 
   if (lastLog?.logTypeHash !== hash) {
+    console.log('record');
     revision = recordLogTypeRevisionCallback(get, set, log.logType);
     hash = getLogTypeHash(revision);
   }
 
-  logMMKVStorage.setMap(log.id, {
-    ...omit(log, ['logType']),
-    logTypeId: log.logType.id,
-    revisionId: revision.id,
-    logTypeHash: hash,
-  });
+  logMMKVStorage.setMap(log.id, serializeLog(log, revision, hash));
 
   const logIndexForLogType = logIndexMMKVStorage.getArray(log.logType.id) ?? [];
   logIndexMMKVStorage.setArray(log.logType.id, [log.id, ...logIndexForLogType]);
@@ -150,11 +165,9 @@ export const loadLogsAtom = atom(null, async (get, set) => {
   set(
     logsAtom,
     orderBy(
-      logs.map(([_, log]) => ({
-        ...omit(log, ['logTypeId']),
-        createAt: new Date(log.createAt),
-        logType: get(logTypeFamily({id: log.logTypeId})),
-      })),
+      logs.map(([_, log]) =>
+        deserializeLog(log, get(logTypeFamily({id: log.logTypeId}))),
+      ),
       ['createAt'],
       ['desc'],
     ),

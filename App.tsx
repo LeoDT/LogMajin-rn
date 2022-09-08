@@ -1,34 +1,21 @@
-import {useEffect, useState} from 'react';
 import {StatusBar, StyleSheet} from 'react-native';
 
 import {ActionSheetProvider} from '@expo/react-native-action-sheet';
 import {BottomSheetModalProvider} from '@gorhom/bottom-sheet';
 import {NavigationContainer} from '@react-navigation/native';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
-import {useSetAtom} from 'jotai';
 import {GestureHandlerRootView} from 'react-native-gesture-handler';
 import {SafeAreaProvider} from 'react-native-safe-area-context';
 
-import {loadLogTypesAtom} from './atoms/logType';
 import {AddLogModal} from './components/AddLogModal';
 import {EditLogTypeModal} from './components/EditLogTypeModal';
 import {HomeScreen} from './components/HomeScreen';
+import {HomeStackParamList} from './types';
 
-const Stack = createNativeStackNavigator();
+const Stack = createNativeStackNavigator<HomeStackParamList>();
 
 function App() {
-  const [inited, setInited] = useState(false);
-  const loadLogTypes = useSetAtom(loadLogTypesAtom);
-
-  useEffect(() => {
-    (async () => {
-      await loadLogTypes();
-
-      setInited(true);
-    })();
-  }, [loadLogTypes]);
-
-  return inited ? (
+  return (
     <>
       <StatusBar animated backgroundColor="#fff" barStyle="dark-content" />
 
@@ -67,7 +54,7 @@ function App() {
         </BottomSheetModalProvider>
       </GestureHandlerRootView>
     </>
-  ) : null;
+  );
 }
 
 const styles = StyleSheet.create({

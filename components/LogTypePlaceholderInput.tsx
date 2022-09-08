@@ -78,6 +78,23 @@ export function LogTypePlaceholderInput<
             }
           />
         );
+
+      case PlaceholderType.Number:
+        return (
+          <View style={styles.textInputWrapper}>
+            <TextInput
+              style={styles.textInput}
+              value={value.value}
+              onChangeText={v =>
+                onChange({
+                  id: placeholder.id,
+                  value: v,
+                } as V)
+              }
+              keyboardType="numeric"
+            />
+          </View>
+        );
     }
   }, [placeholder, value, onChange]);
 

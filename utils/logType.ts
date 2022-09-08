@@ -8,5 +8,7 @@ export function showPlaceholderType(t: PlaceholderType) {
       return 'Text Input';
     case PlaceholderType.Select:
       return 'Select';
+    case PlaceholderType.Number:
+      return 'Number';
   }
 }
