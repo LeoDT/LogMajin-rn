@@ -4,6 +4,7 @@ import {ActionSheetProvider} from '@expo/react-native-action-sheet';
 import {BottomSheetModalProvider} from '@gorhom/bottom-sheet';
 import {NavigationContainer} from '@react-navigation/native';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
+import {useAtomsDebugValue} from 'jotai/devtools';
 import {GestureHandlerRootView} from 'react-native-gesture-handler';
 import {SafeAreaProvider} from 'react-native-safe-area-context';
 
@@ -15,6 +16,8 @@ import {HomeStackParamList} from './types';
 const Stack = createNativeStackNavigator<HomeStackParamList>();
 
 function App() {
+  useAtomsDebugValue();
+
   return (
     <>
       <StatusBar animated backgroundColor="#fff" barStyle="dark-content" />

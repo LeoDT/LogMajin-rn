@@ -4,6 +4,7 @@ module.exports = {
       'module:metro-react-native-babel-preset',
       {useTransformReactJSXExperimental: true},
     ],
+    'jotai/babel/preset',
   ],
   plugins: [
     [
