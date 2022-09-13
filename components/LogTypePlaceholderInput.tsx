@@ -1,13 +1,18 @@
 import {useCallback} from 'react';
-import {StyleSheet, View, TextInput, Text} from 'react-native';
+import {StyleSheet, View, Text} from 'react-native';
 
-import {BottomSheetScrollView} from '@gorhom/bottom-sheet';
+import {
+  BottomSheetScrollView,
+  BottomSheetTextInput,
+} from '@gorhom/bottom-sheet';
 
 import {loadLogInputHistory, PlaceholderValueTypes} from '../atoms/log';
 import {NeedInputPlaceholder, PlaceholderType} from '../atoms/logType';
 import {colors} from '../colors';
 import {ListSelect} from './ListSelect';
 import {LogTypeThemedLinkButton} from './LogTypeThemedLinkButton';
+
+const TextInput = BottomSheetTextInput;
 
 interface Props<
   P extends NeedInputPlaceholder,

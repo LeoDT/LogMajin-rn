@@ -1,3 +1,5 @@
+import {Alert, DevSettings} from 'react-native';
+
 import {MMKVInstance, MMKVLoader} from 'react-native-mmkv-storage';
 import mmkvFlipper from 'rn-mmkv-storage-flipper';
 
@@ -191,9 +193,26 @@ export function fillTestLogType() {
   testData.forEach(d => {
     logTypeMMKVStorage.setMap(d.id, d);
   });
+
+  logTypeMMKVStorage.setArray(
+    'all',
+    testData.map(d => d.id),
+  );
 }
+
+DevSettings.addMenuItem('fill', () => fillTestLogType());
+DevSettings.addMenuItem('clear', () => {
+  clearLogStores();
+  logTypeMMKVStorage.clearStore();
+});
+
+DevSettings.addMenuItem('alert', () => {
+  Alert.alert(logTypeMMKVStorage.getMap('q6SEH4hOfzidac8y_oIwn').name);
+});
 
 // logAllLogType();
 
 // clearLogStores();
 // logTypeMMKVStorage.clearStore();
+
+// fillTestLogType();
