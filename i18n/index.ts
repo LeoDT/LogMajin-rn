@@ -8,6 +8,10 @@ import {Locale} from 'react-native-localize';
 const resources = {
   en: {
     translation: {
+      done: 'Done',
+      cancel: 'Cancel',
+      update: 'Update',
+
       createTab: 'Create',
       logTab: 'Logs',
 
@@ -26,10 +30,17 @@ const resources = {
         contain: 'Contain',
         without: 'Without',
       },
+
+      editLogTypeColorTab: 'Color',
+      editLogTypeIconTab: 'Icon',
     },
   },
   zh: {
     translation: {
+      done: '完成',
+      cancel: '取消',
+      update: '更新',
+
       createTab: '记一条',
       logTab: '历史',
 
@@ -48,6 +59,9 @@ const resources = {
         contain: '包含',
         without: '不包含',
       },
+
+      editLogTypeColorTab: '颜色',
+      editLogTypeIconTab: '图形',
     },
   },
 };

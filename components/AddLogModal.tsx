@@ -3,6 +3,7 @@ import {StyleSheet, Text, View} from 'react-native';
 
 import {NativeStackScreenProps} from '@react-navigation/native-stack';
 import {useAtom, useAtomValue, useSetAtom} from 'jotai';
+import {useTranslation} from 'react-i18next';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
 import {commitLogAtom, makeLogAtom} from '../atoms/log';
@@ -21,6 +22,7 @@ import {LogTypeThemedLinkButton} from './LogTypeThemedLinkButton';
 type Props = NativeStackScreenProps<HomeStackParamList, 'AddLog'>;
 
 export function AddLogModal({navigation, route}: Props): JSX.Element {
+  const {t} = useTranslation();
   const logTypeAtom = logTypeFamily({id: route.params.logTypeId});
   const logType = useAtomValue(logTypeAtom);
   const themeColor = colorValueForLogType(logType.color);
@@ -50,7 +52,7 @@ export function AddLogModal({navigation, route}: Props): JSX.Element {
           <Text style={styles.name}>{logType.name}</Text>
 
           <LogTypeThemedLinkButton
-            title="Cancel"
+            title={t('cancel')}
             style={styles.cancel}
             onPress={() => navigation.goBack()}
           />
@@ -61,7 +63,7 @@ export function AddLogModal({navigation, route}: Props): JSX.Element {
           </Text>
 
           <LogTypeThemedLinkButton
-            title="Update"
+            title={t('update')}
             onPress={() => {
               setNewLog({...newLog, createAt: new Date()});
             }}

@@ -9,6 +9,7 @@ import {GestureHandlerRootView} from 'react-native-gesture-handler';
 import {SafeAreaProvider} from 'react-native-safe-area-context';
 
 import {AddLogModal} from './components/AddLogModal';
+import {EditLogTypeColorAndIcon} from './components/EditLogTypeColorAndIcon';
 import {EditLogTypeModal} from './components/EditLogTypeModal';
 import {HomeScreen} from './components/HomeScreen';
 import {HomeStackParamList} from './types';
@@ -46,6 +47,10 @@ function App() {
                     <Stack.Screen
                       name="EditLogType"
                       component={EditLogTypeModal}
+                    />
+                    <Stack.Screen
+                      name="EditLogTypeColorAndIcon"
+                      component={EditLogTypeColorAndIcon}
                     />
 
                     <Stack.Screen name="AddLog" component={AddLogModal} />

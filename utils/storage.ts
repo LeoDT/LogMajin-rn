@@ -76,10 +76,11 @@ export function fillTestLogType() {
           id: 'tG4sk0eJHDQePfRjP5G-Y',
         },
       ],
-      revision: 1,
+      revision: 0,
       createAt: '2022-09-08T00:19:43.128Z',
       updateAt: '2022-09-08T00:19:43.128Z',
       color: 'yellow',
+      icon: './Buildings/ancient-gate.svg',
     },
     {
       id: 'aWEwmTL8BgWXOtchid6Th',
@@ -112,10 +113,11 @@ export function fillTestLogType() {
           name: '咖啡',
         },
       ],
-      revision: 1,
+      revision: 0,
       createAt: '2022-09-08T00:20:00.126Z',
       updateAt: '2022-09-08T00:20:00.126Z',
       color: 'green',
+      icon: './Buildings/ancient-gate.svg',
     },
     {
       id: '69mthI-x_y6hcBoCnMbHI',
@@ -140,6 +142,7 @@ export function fillTestLogType() {
       createAt: '2022-09-08T00:21:46.609Z',
       updateAt: '2022-09-08T00:21:46.609Z',
       color: 'blue',
+      icon: './Buildings/ancient-gate.svg',
     },
     {
       id: 'k0f-8NpIYBxTgELGqcNHD',
@@ -171,6 +174,7 @@ export function fillTestLogType() {
       createAt: '2022-09-08T00:22:44.193Z',
       updateAt: '2022-09-08T00:22:44.193Z',
       color: 'red',
+      icon: './Buildings/ancient-gate.svg',
     },
     {
       id: 'q6SEH4hOfzidac8y_oIwn',
@@ -187,6 +191,7 @@ export function fillTestLogType() {
       createAt: '2022-09-08T00:23:45.340Z',
       updateAt: '2022-09-08T00:23:45.340Z',
       color: 'violet',
+      icon: './Buildings/ancient-gate.svg',
     },
   ];
 

@@ -1,4 +1,5 @@
 import {Animated, View, Pressable, StyleSheet, Text} from 'react-native';
+
 import {
   NavigationState,
   Route,
@@ -27,13 +28,7 @@ function Tab({
       style={{
         opacity,
       }}>
-      <Text
-        style={[
-          styles.label,
-          navigationState.index === index ? styles.activeLabel : null,
-        ]}>
-        {route.title}
-      </Text>
+      <Text style={styles.label}>{route.title}</Text>
     </Animated.View>
   );
 }
@@ -43,9 +38,13 @@ export function MainTab({
   jumpTo,
   position,
   layout,
-}: SceneRendererProps & {navigationState: NavigationState<Route>}) {
+  isCenter = false,
+}: SceneRendererProps & {
+  navigationState: NavigationState<Route>;
+  isCenter?: boolean;
+}) {
   return (
-    <View style={styles.tabbar}>
+    <View style={[styles.tabbar, isCenter ? styles.tabbarCenter : null]}>
       {navigationState.routes.map((route, index) => (
         <Pressable
           onPress={() => jumpTo(route.key)}
@@ -73,6 +72,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     paddingLeft: 5,
   },
+  tabbarCenter: {
+    justifyContent: 'center',
+  },
   tab: {
     flexGrow: 0,
     paddingLeft: 10,
@@ -82,8 +84,5 @@ const styles = StyleSheet.create({
   label: {
     color: '#000',
     fontSize: 18,
-  },
-  activeLabel: {
-    fontWeight: 'bold',
   },
 });

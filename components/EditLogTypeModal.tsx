@@ -1,7 +1,7 @@
 import {forwardRef, useEffect, useMemo, useRef, useState} from 'react';
 import {View, StyleSheet, TextInput, Pressable, Keyboard} from 'react-native';
 
-import BottomSheet, {BottomSheetModal} from '@gorhom/bottom-sheet';
+import BottomSheet from '@gorhom/bottom-sheet';
 import type {NativeStackScreenProps} from '@react-navigation/native-stack';
 import {useAtomValue, useSetAtom} from 'jotai';
 import DraggableFlatList, {
@@ -14,13 +14,14 @@ import {colors, colorValueForLogType} from '../colors';
 import {HomeStackParamList} from '../types';
 import {AddLogTypePlaceholderSheet} from './AddLogTypePlaceholderSheet';
 import {Close} from './Close';
-import {ColorPicker} from './ColorPicker';
+import {LogTypeItemIconOnly} from './LogTypeItemIconOnly';
 import {LogTypePlaceholderEditor} from './LogTypePlaceholderEditor';
 import {LogTypeThemeContext} from './LogTypeThemeColorContext';
 
 const AddLogTypePlaceholderSheetForward = forwardRef(
   AddLogTypePlaceholderSheet,
 );
+
 const SHEET_PADDING = 120;
 
 type Props = NativeStackScreenProps<HomeStackParamList, 'EditLogType'>;
@@ -35,19 +36,17 @@ export function EditLogTypeModal({route, navigation}: Props): JSX.Element {
     [logType],
   );
 
-  const sheetRef = useRef<BottomSheet>(null);
+  const addPlaceholderSheetRef = useRef<BottomSheet>(null);
   const [sheetPadding, setSheetPadding] = useState(SHEET_PADDING);
-
-  const colorAndIconSheetRef = useRef<BottomSheetModal>(null);
 
   useEffect(() => {
     const show = Keyboard.addListener('keyboardDidShow', () => {
-      sheetRef.current?.close();
+      addPlaceholderSheetRef.current?.close();
       setSheetPadding(0);
     });
 
     const hide = Keyboard.addListener('keyboardDidHide', () => {
-      sheetRef.current?.snapToIndex(0);
+      addPlaceholderSheetRef.current?.snapToIndex(0);
       setSheetPadding(SHEET_PADDING);
     });
 
@@ -62,9 +61,14 @@ export function EditLogTypeModal({route, navigation}: Props): JSX.Element {
       <SafeAreaView style={[styles.container, {paddingBottom: sheetPadding}]}>
         <View style={styles.header}>
           <Pressable
-            onPress={() => colorAndIconSheetRef.current?.present()}
-            style={[styles.icon, {backgroundColor: themeColor}]}
-          />
+            onPress={() =>
+              navigation.navigate('EditLogTypeColorAndIcon', {
+                logTypeId: logType.id,
+              })
+            }
+            style={styles.icon}>
+            <LogTypeItemIconOnly logType={logType} iconSize={32} />
+          </Pressable>
           <TextInput
             value={logType.name}
             onChangeText={v => {
@@ -106,16 +110,10 @@ export function EditLogTypeModal({route, navigation}: Props): JSX.Element {
           )}
         />
 
-        <BottomSheetModal snapPoints={[260]} ref={colorAndIconSheetRef}>
-          <ColorPicker
-            value={logType.color}
-            onChange={color => {
-              setLogType({...logType, color});
-            }}
-          />
-        </BottomSheetModal>
-
-        <AddLogTypePlaceholderSheetForward logType={logType} ref={sheetRef} />
+        <AddLogTypePlaceholderSheetForward
+          logType={logType}
+          ref={addPlaceholderSheetRef}
+        />
       </SafeAreaView>
     </LogTypeThemeContext.Provider>
   );
@@ -144,7 +142,6 @@ const styles = StyleSheet.create({
   icon: {
     width: 40,
     height: 40,
-    backgroundColor: colors.orange['800'],
   },
   close: {
     marginLeft: 'auto',
@@ -164,5 +161,10 @@ const styles = StyleSheet.create({
   },
   firstPlaceholderItem: {
     marginTop: 20,
+  },
+
+  bottomContainer: {
+    flex: 1,
+    backgroundColor: 'yellow',
   },
 });

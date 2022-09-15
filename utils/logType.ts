@@ -12,3 +12,10 @@ export function showPlaceholderType(t: PlaceholderType) {
       return 'Number';
   }
 }
+
+export const iconContext = require.context(
+  '../assets/log-type-icons/',
+  true,
+  /\.svg$/,
+  'sync',
+);

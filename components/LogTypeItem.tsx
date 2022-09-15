@@ -1,13 +1,14 @@
-import {useAtomValue} from 'jotai';
 import {Text, StyleSheet, View, Pressable} from 'react-native';
-import {useNavigation} from '@react-navigation/native';
-import LinearGradient from 'react-native-linear-gradient';
 
-import {logTypeFamily} from '../atoms/logType';
-import {colors} from '../colors';
+import {useNavigation} from '@react-navigation/native';
+import {useAtomValue} from 'jotai';
+import LinearGradient from 'react-native-linear-gradient';
 
 import HeartPulseSvg from '../assets/heart-pulse.svg';
 import MoreSvg from '../assets/more.svg';
+import {logTypeFamily} from '../atoms/logType';
+import {colors} from '../colors';
+import {iconContext} from '../utils/logType';
 
 interface Props {
   logTypeId: string;
@@ -18,6 +19,7 @@ export function LogTypeItem({logTypeId}: Props): JSX.Element {
   const logTypeAtom = logTypeFamily({id: logTypeId});
   const logType = useAtomValue(logTypeAtom);
   const color = colors[logType.color]['800'];
+  const Icon = iconContext(logType.icon)?.default;
 
   return (
     <View style={[styles.wrapper, {backgroundColor: color}]}>
@@ -41,12 +43,9 @@ export function LogTypeItem({logTypeId}: Props): JSX.Element {
           <MoreSvg width={25} height={25} fill={color} />
         </Pressable>
 
-        <HeartPulseSvg
-          width={45}
-          height={45}
-          fill="white"
-          style={styles.icon}
-        />
+        {Icon ? (
+          <Icon width={45} height={45} fill="white" style={styles.icon} />
+        ) : null}
       </LinearGradient>
     </View>
   );

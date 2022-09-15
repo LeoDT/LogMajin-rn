@@ -1,6 +1,6 @@
 import {without, isEqual} from 'lodash-es';
 
-import {atom, Getter, Setter} from 'jotai';
+import {atom, Getter, Setter, WritableAtom} from 'jotai';
 import {atomFamily} from 'jotai/utils';
 import {nanoid} from 'nanoid';
 
@@ -67,6 +67,7 @@ export interface LogType {
   createAt: Date;
   updateAt: Date;
   color: Color;
+  icon: string;
 
   revision: number;
   archiveAt?: Date;
@@ -151,6 +152,7 @@ export function makeDefaultLogType(id: string): LogType {
     createAt: timestamp,
     updateAt: timestamp,
     color: randomColorForLogType(),
+    icon: 'Business/archive.svg',
   };
 }
 
@@ -170,6 +172,8 @@ interface LogTypeFamilyParams extends Partial<LogType> {
 interface LogTypeUpdateParams extends Partial<LogType> {
   shouldUpdateTimestamp?: boolean;
 }
+
+export type LogTypeAtomType = WritableAtom<LogType, LogTypeUpdateParams, void>;
 
 // return an atom that auto persist
 export const logTypeFamily = atomFamily(
