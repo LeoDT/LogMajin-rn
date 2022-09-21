@@ -130,7 +130,10 @@ export function LogsFilter(): JSX.Element {
             <View style={styles.dateFilterItem}>
               <TouchableOpacity
                 style={[styles.input, styles.dateFilterInput]}
-                onPress={() => setDateOpen('from')}
+                onPress={() => {
+                  setDateOpen('from');
+                  setEditingDate(filter.from ?? new Date());
+                }}
                 activeOpacity={0.6}>
                 <Text>
                   {filter.from ? dateFormat.format(filter.from) : null}
@@ -141,7 +144,10 @@ export function LogsFilter(): JSX.Element {
             <View style={styles.dateFilterItem}>
               <TouchableOpacity
                 style={[styles.input, styles.dateFilterInput]}
-                onPress={() => setDateOpen('to')}
+                onPress={() => {
+                  setDateOpen('to');
+                  setEditingDate(filter.to ?? new Date());
+                }}
                 activeOpacity={0.6}>
                 <Text>{filter.to ? dateFormat.format(filter.to) : null}</Text>
               </TouchableOpacity>
