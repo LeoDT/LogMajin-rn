@@ -1,12 +1,14 @@
+import {useCallback} from 'react';
 import {Text, StyleSheet, View, Pressable} from 'react-native';
 
+import {useActionSheet} from '@expo/react-native-action-sheet';
 import {useNavigation} from '@react-navigation/native';
-import {useAtomValue} from 'jotai';
+import {useAtomValue, useSetAtom} from 'jotai';
+import {useTranslation} from 'react-i18next';
 import LinearGradient from 'react-native-linear-gradient';
 
-import HeartPulseSvg from '../assets/heart-pulse.svg';
 import MoreSvg from '../assets/more.svg';
-import {logTypeFamily} from '../atoms/logType';
+import {archiveLogTypeAtom, logTypeFamily} from '../atoms/logType';
 import {colors} from '../colors';
 import {iconContext} from '../utils/logType';
 
@@ -16,10 +18,34 @@ interface Props {
 
 export function LogTypeItem({logTypeId}: Props): JSX.Element {
   const navigation = useNavigation();
+
+  const {t} = useTranslation();
+  const {showActionSheetWithOptions} = useActionSheet();
+
   const logTypeAtom = logTypeFamily({id: logTypeId});
   const logType = useAtomValue(logTypeAtom);
+  const archiveLogType = useSetAtom(archiveLogTypeAtom);
   const color = colors[logType.color]['800'];
   const Icon = iconContext(logType.icon)?.default;
+
+  const actions = useCallback(() => {
+    showActionSheetWithOptions(
+      {
+        options: [t('edit'), t('archive'), t('cancel')],
+        cancelButtonIndex: 2,
+      },
+      i => {
+        switch (i) {
+          case 0:
+            navigation.navigate('EditLogType', {logTypeId});
+            break;
+          case 1:
+            archiveLogType({logTypeId});
+            break;
+        }
+      },
+    );
+  }, [showActionSheetWithOptions, t, navigation, logTypeId, archiveLogType]);
 
   return (
     <View style={[styles.wrapper, {backgroundColor: color}]}>
@@ -38,7 +64,7 @@ export function LogTypeItem({logTypeId}: Props): JSX.Element {
             pressed ? styles.morePressed : null,
           ]}
           onPress={() => {
-            navigation.navigate('EditLogType', {logTypeId});
+            actions();
           }}>
           <MoreSvg width={25} height={25} fill={color} />
         </Pressable>

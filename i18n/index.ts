@@ -9,11 +9,22 @@ const resources = {
   en: {
     translation: {
       done: 'Done',
+      confirm: 'Confirm',
       cancel: 'Cancel',
       update: 'Update',
+      edit: 'Edit',
+      archive: 'Archive',
+      delete: 'Delete',
+
+      next: 'Next',
+      prev: 'Prev',
 
       createTab: 'Create',
       logTab: 'Logs',
+
+      logType: {
+        defaultName: 'New Log Type',
+      },
 
       createLogType: 'Create Type',
 
@@ -29,22 +40,45 @@ const resources = {
         ahead: 'ahead',
         contain: 'Contain',
         without: 'Without',
+        selectDate: 'Select Date',
+        clearDate: 'Clear',
+      },
+
+      placeholder: {
+        name: 'Name',
+        textPlaceholder: 'Some Text',
+        option: 'Option',
+        selectDefaultOption: 'Option',
+        addSelectOption: 'Add Option',
       },
 
       editLogTypeColorTab: 'Color',
       editLogTypeIconTab: 'Icon',
+
+      textInputHistoryLabel: 'History',
     },
   },
   zh: {
     translation: {
       done: '完成',
+      confirm: '确认',
       cancel: '取消',
       update: '更新',
+      edit: '编辑',
+      archive: '归档',
+      delete: '删除',
+
+      next: '下一个',
+      prev: '上一个',
 
       createTab: '记一条',
       logTab: '历史',
 
-      createLogType: '新类型',
+      logType: {
+        defaultName: '新类型',
+      },
+
+      createLogType: '新增类型',
 
       placeholderType: {
         text: '文本',
@@ -58,10 +92,26 @@ const resources = {
         ahead: '之后',
         contain: '包含',
         without: '不包含',
+        selectDate: '选择日期',
+        clearDate: '清除',
+      },
+
+      placeholder: {
+        name: '名称',
+        defaultNameForText: '文本',
+        defaultNameForTextInput: '输入文本',
+        defaultNameForSelect: '单选',
+        defaultNameForNumber: '输入数字',
+        textPlaceholder: '固定文本',
+        option: '选项',
+        selectDefaultOption: '选项',
+        addSelectOption: '新增选项',
       },
 
       editLogTypeColorTab: '颜色',
       editLogTypeIconTab: '图形',
+
+      textInputHistoryLabel: '历史',
     },
   },
 };
@@ -87,6 +137,8 @@ i18next
     debug: __DEV__,
     resources,
   });
+
+export {i18next};
 
 export function useLocale(): [Locale, (l: Locale) => void] {
   const [locale, setLocale] = useState<Locale>(currentLocale);

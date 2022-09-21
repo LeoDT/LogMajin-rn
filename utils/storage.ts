@@ -80,7 +80,7 @@ export function fillTestLogType() {
       createAt: '2022-09-08T00:19:43.128Z',
       updateAt: '2022-09-08T00:19:43.128Z',
       color: 'yellow',
-      icon: './Buildings/ancient-gate.svg',
+      icon: './Others/game.svg',
     },
     {
       id: 'aWEwmTL8BgWXOtchid6Th',
@@ -106,7 +106,7 @@ export function fillTestLogType() {
           name: 'new text',
         },
         {
-          options: ['黑', '那贴2'],
+          options: ['黑', '拿铁'],
           multiple: false,
           id: '7viw5idnYjw5_0Ez8SgR7',
           kind: 'select',
@@ -117,7 +117,7 @@ export function fillTestLogType() {
       createAt: '2022-09-08T00:20:00.126Z',
       updateAt: '2022-09-08T00:20:00.126Z',
       color: 'green',
-      icon: './Buildings/ancient-gate.svg',
+      icon: './Map/cup.svg',
     },
     {
       id: '69mthI-x_y6hcBoCnMbHI',
@@ -142,7 +142,7 @@ export function fillTestLogType() {
       createAt: '2022-09-08T00:21:46.609Z',
       updateAt: '2022-09-08T00:21:46.609Z',
       color: 'blue',
-      icon: './Buildings/ancient-gate.svg',
+      icon: './Map/subway.svg',
     },
     {
       id: 'k0f-8NpIYBxTgELGqcNHD',
@@ -174,7 +174,7 @@ export function fillTestLogType() {
       createAt: '2022-09-08T00:22:44.193Z',
       updateAt: '2022-09-08T00:22:44.193Z',
       color: 'red',
-      icon: './Buildings/ancient-gate.svg',
+      icon: './Map/taxi.svg',
     },
     {
       id: 'q6SEH4hOfzidac8y_oIwn',
@@ -191,7 +191,7 @@ export function fillTestLogType() {
       createAt: '2022-09-08T00:23:45.340Z',
       updateAt: '2022-09-08T00:23:45.340Z',
       color: 'violet',
-      icon: './Buildings/ancient-gate.svg',
+      icon: './Design/magic.svg',
     },
   ];
 
@@ -209,6 +209,14 @@ DevSettings.addMenuItem('fill', () => fillTestLogType());
 DevSettings.addMenuItem('clear', () => {
   clearLogStores();
   logTypeMMKVStorage.clearStore();
+});
+DevSettings.addMenuItem('reset', () => {
+  clearLogStores();
+  logTypeMMKVStorage.clearStore();
+
+  fillTestLogType();
+
+  DevSettings.reload();
 });
 
 DevSettings.addMenuItem('alert', () => {

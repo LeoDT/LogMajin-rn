@@ -27,19 +27,18 @@ import {LogTypeItem} from './LogTypeItem';
 export function CreateScreen(): JSX.Element {
   const navigation = useNavigation();
   const {t} = useTranslation();
-  const logTypes = useAtomValue(logTypesAtom);
+  const allLogTypes = useAtomValue(logTypesAtom);
+  const logTypes = useMemo(
+    () => allLogTypes.filter(l => !l.archiveAt),
+    [allLogTypes],
+  );
   const makeLogType = useAtomCallback(
-    useCallback(
-      (get, set) => {
-        const id = nanoid();
-        const atom = logTypeFamily({id});
+    useCallback(() => {
+      const id = nanoid();
+      logTypeFamily({id});
 
-        /* set(logTypesAtom, [get(atom), ...get(logTypesAtom)]); */
-
-        navigation.navigate('EditLogType', {logTypeId: id});
-      },
-      [navigation],
-    ),
+      navigation.navigate('EditLogType', {logTypeId: id});
+    }, [navigation]),
   );
   const commitLog = useSetAtom(commitLogAtom);
   const {width} = useWindowDimensions();

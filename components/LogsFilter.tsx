@@ -17,11 +17,13 @@ import {
 } from '@gorhom/bottom-sheet';
 import {useAtom, useAtomValue} from 'jotai';
 import {useTranslation} from 'react-i18next';
+import DatePicker from 'react-native-date-picker';
 
 import FilterSvg from '../assets/filter.svg';
 import {filterAtom} from '../atoms/log';
 import {LogType, logTypesAtom} from '../atoms/logType';
 import {colors, colorValueForLogType} from '../colors';
+import {useDateFormat} from '../i18n';
 
 export function LogsFilter(): JSX.Element {
   const {t} = useTranslation();
@@ -29,6 +31,7 @@ export function LogsFilter(): JSX.Element {
   const bottomRef = useRef<BottomSheetModal | null>(null);
   const logTypes = useAtomValue(logTypesAtom);
   const [filter, setFilter] = useAtom(filterAtom);
+  const dateFormat = useDateFormat();
   const open = useCallback(() => {
     setDetailOpen(true);
     bottomRef.current?.present();
@@ -37,6 +40,8 @@ export function LogsFilter(): JSX.Element {
     setDetailOpen(false);
     bottomRef.current?.dismiss();
   }, []);
+  const [dateOpen, setDateOpen] = useState<string>('');
+  const [editingDate, setEditingDate] = useState<Date>(() => new Date());
 
   const updateFilterLogTypes = useCallback(
     (l: LogType) => {
@@ -123,13 +128,70 @@ export function LogsFilter(): JSX.Element {
 
           <View style={[styles.filterItem, styles.dateFilter]}>
             <View style={styles.dateFilterItem}>
-              <TextInput style={[styles.input, styles.dateFilterInput]} />
-              <Text style={styles.dateFilterText}>{t('filter.ago')}</Text>
-            </View>
-            <View style={styles.dateFilterItem}>
-              <TextInput style={[styles.input, styles.dateFilterInput]} />
+              <TouchableOpacity
+                style={[styles.input, styles.dateFilterInput]}
+                onPress={() => setDateOpen('from')}
+                activeOpacity={0.6}>
+                <Text>
+                  {filter.from ? dateFormat.format(filter.from) : null}
+                </Text>
+              </TouchableOpacity>
               <Text style={styles.dateFilterText}>{t('filter.ahead')}</Text>
             </View>
+            <View style={styles.dateFilterItem}>
+              <TouchableOpacity
+                style={[styles.input, styles.dateFilterInput]}
+                onPress={() => setDateOpen('to')}
+                activeOpacity={0.6}>
+                <Text>{filter.to ? dateFormat.format(filter.to) : null}</Text>
+              </TouchableOpacity>
+              <Text style={styles.dateFilterText}>{t('filter.ago')}</Text>
+            </View>
+
+            {filter.from || filter.to ? (
+              <TouchableOpacity
+                style={styles.dateFilterClear}
+                onPress={() => {
+                  setFilter({...filter, from: undefined, to: undefined});
+                }}>
+                <Text>{t('filter.clearDate')}</Text>
+              </TouchableOpacity>
+            ) : null}
+
+            <DatePicker
+              modal
+              open={Boolean(dateOpen)}
+              date={editingDate}
+              mode="date"
+              onConfirm={(d: Date) => {
+                if (dateOpen === 'from') {
+                  let to = filter.to;
+
+                  if (to && d >= to) {
+                    to = d;
+                  }
+
+                  setFilter({...filter, from: d, to});
+                } else {
+                  let from = filter.from;
+
+                  if (from && d < from) {
+                    from = d;
+                  }
+
+                  setFilter({...filter, to: d, from});
+                }
+
+                setDateOpen('');
+              }}
+              onCancel={() => {
+                setDateOpen('');
+              }}
+              androidVariant="iosClone"
+              confirmText={t('confirm')}
+              cancelText={t('cancel')}
+              title={t('filter.selectDate')}
+            />
           </View>
 
           <View style={[styles.filterItem, styles.containFilter]}>
@@ -220,10 +282,12 @@ const styles = StyleSheet.create({
   dateFilterInput: {
     maxWidth: '70%',
     marginRight: 10,
+    justifyContent: 'center',
   },
   dateFilterText: {
     color: colors.black,
   },
+  dateFilterClear: {},
 
   containFilter: {
     paddingBottom: 10,

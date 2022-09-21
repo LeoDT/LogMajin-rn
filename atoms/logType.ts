@@ -5,6 +5,7 @@ import {atomFamily} from 'jotai/utils';
 import {nanoid} from 'nanoid';
 
 import {Color, randomColorForLogType} from '../colors';
+import {i18next} from '../i18n';
 import {logTypeMMKVStorage, makeStorageWithMMKV} from '../utils/storage';
 
 export enum PlaceholderType {
@@ -136,14 +137,26 @@ export function makeDefaultLogType(id: string): LogType {
 
   return {
     id,
-    name: 'New Log Type',
+    name: i18next.t('logType.defaultName'),
     placeholders: [
-      {name: 'text', kind: PlaceholderType.Text, id: nanoid(), content: ''},
-      {name: 'textInput', kind: PlaceholderType.TextInput, id: nanoid()},
       {
-        name: 'select',
+        name: i18next.t('placeholder.defaultNameForText'),
+        kind: PlaceholderType.Text,
+        id: nanoid(),
+        content: '',
+      },
+      {
+        name: i18next.t('placeholder.defaultNameForTextInput'),
+        kind: PlaceholderType.TextInput,
+        id: nanoid(),
+      },
+      {
+        name: i18next.t('placeholder.defaultNameForSelect'),
         kind: PlaceholderType.Select,
-        options: ['Option 1', 'Option 2'],
+        options: [
+          `${i18next.t('placeholder.option')} 1`,
+          `${i18next.t('placeholder.option')} 2`,
+        ],
         multiple: false,
         id: nanoid(),
       },
@@ -152,7 +165,7 @@ export function makeDefaultLogType(id: string): LogType {
     createAt: timestamp,
     updateAt: timestamp,
     color: randomColorForLogType(),
-    icon: 'Business/archive.svg',
+    icon: './Business/archive.svg',
   };
 }
 
@@ -282,14 +295,19 @@ export function getLatestLogTypeRevisionCallback(
 export function getPlaceholderDefaults(t: PlaceholderType) {
   switch (t) {
     case PlaceholderType.Select:
-      return {options: ['New Option'], multiple: false};
+      return {
+        name: i18next.t('placeholder.defaultNameForSelect'),
+        options: [i18next.t('placeholder.selectDefaultOption')],
+        multiple: false,
+      };
 
     case PlaceholderType.Text:
-      return {content: ''};
+      return {content: '', name: i18next.t('placeholder.defaultNameForText')};
 
     case PlaceholderType.TextInput:
+      return {name: i18next.t('placeholder.defaultNameForTextInput')};
     case PlaceholderType.Number:
-      return {};
+      return {name: i18next.t('placeholder.defaultNameForNumber')};
 
     default:
       return {};
@@ -308,6 +326,15 @@ export function getLogTypeHash(lt: LogType): string {
     .join(':')}`;
 }
 
+export const archiveLogTypeAtom = atom(
+  null,
+  (_, set, {logTypeId}: {logTypeId: string}) => {
+    const logTypeAtom = logTypeFamily({id: logTypeId});
+
+    set(logTypeAtom, {archiveAt: new Date()});
+  },
+);
+
 interface AddPlaceholderParams {
   logTypeId: string;
   name?: string;
@@ -322,9 +349,12 @@ export const addPlaceholderAtom = atom(
     const placeholder = {
       id: nanoid(),
       kind: type,
-      name: name ?? 'new text',
       ...getPlaceholderDefaults(type),
     } as Placeholder;
+
+    if (name) {
+      placeholder.name = name;
+    }
 
     set(a, {
       ...logType,

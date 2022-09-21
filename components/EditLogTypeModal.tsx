@@ -130,6 +130,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.white,
     flexDirection: 'row',
     alignItems: 'center',
+
     shadowColor: '#000',
     shadowOffset: {
       width: 0,

@@ -8,6 +8,7 @@ import {
 
 import {useActionSheet} from '@expo/react-native-action-sheet';
 import {useSetAtom} from 'jotai';
+import {useTranslation} from 'react-i18next';
 
 import MoreSvg from '../assets/more.svg';
 import {
@@ -30,6 +31,8 @@ export function LogTypePlaceholderEditor({
   logType,
   placeholder,
 }: Props): JSX.Element {
+  const {t} = useTranslation();
+
   const updatePlaceholder = useSetAtom(updatePlaceholderAtom);
   const removePlaceholder = useSetAtom(removePlaceholderAtom);
   const {showActionSheetWithOptions} = useActionSheet();
@@ -40,7 +43,7 @@ export function LogTypePlaceholderEditor({
         return (
           <TextInput
             style={styles.editorText}
-            placeholder="blah blah"
+            placeholder={t('placeholder.textPlaceholder')}
             value={placeholder.content}
             onChangeText={v => {
               updatePlaceholder({
@@ -83,7 +86,7 @@ export function LogTypePlaceholderEditor({
         <TextInput
           style={styles.name}
           value={placeholder.name}
-          placeholder="Name"
+          placeholder={t('placeholder.name')}
           onChangeText={v => {
             updatePlaceholder({
               logTypeId: logType.id,
@@ -99,14 +102,16 @@ export function LogTypePlaceholderEditor({
       {renderDetail()}
 
       <View style={styles.metas}>
-        <Text style={styles.type}>{showPlaceholderType(placeholder.kind)}</Text>
+        <Text style={styles.type}>
+          {t(`placeholderType.${placeholder.kind}`)}
+        </Text>
 
         <TouchableOpacity
           style={styles.more}
           onPress={() => {
             showActionSheetWithOptions(
               {
-                options: ['Delete', 'Cancel'],
+                options: [t('delete'), t('cancel')],
                 destructiveButtonIndex: 0,
                 cancelButtonIndex: 1,
               },

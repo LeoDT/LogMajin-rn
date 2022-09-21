@@ -4,6 +4,8 @@ import {StyleSheet, Text, View} from 'react-native';
 
 import BottomSheet from '@gorhom/bottom-sheet';
 import {useAtom, WritableAtom} from 'jotai';
+import {useTranslation} from 'react-i18next';
+import {Shadow} from 'react-native-shadow-2';
 
 import {Log, PlaceholderValue} from '../atoms/log';
 import {NeedInputPlaceholder} from '../atoms/logType';
@@ -29,6 +31,7 @@ export function LogTypePlaceholderInputWizard({
   onUpdateActivePlaceholder,
   onFinish,
 }: Props): JSX.Element {
+  const {t} = useTranslation();
   const [log, setLog] = useAtom(logAtom);
 
   const activePlaceholderValue = useMemo(
@@ -74,18 +77,19 @@ export function LogTypePlaceholderInputWizard({
 
   return (
     <BottomSheet
-      snapPoints={['30%']}
+      snapPoints={[240]}
       style={styles.container}
+      keyboardBlurBehavior="restore"
       enableOverDrag={false}>
       <View style={styles.tools}>
         <Text style={styles.name}>{activePlaceholder.name}</Text>
         <Text style={styles.type}>
-          {showPlaceholderType(activePlaceholder.kind)}
+          {t(`placeholderType.${activePlaceholder.kind}`)}
         </Text>
 
         <View style={styles.navs}>
           <LogTypeThemedLinkButton
-            title="Prev"
+            title={t('prev')}
             style={styles.nav}
             onPress={() => {
               if (!isFirst) {
@@ -95,7 +99,7 @@ export function LogTypePlaceholderInputWizard({
             isDisabled={isFirst}
           />
           <LogTypeThemedLinkButton
-            title={isLast ? 'Finish' : 'Next'}
+            title={isLast ? t('done') : t('next')}
             style={styles.nav}
             onPress={() => {
               if (isLast) {
@@ -123,15 +127,17 @@ export function LogTypePlaceholderInputWizard({
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: colors.white,
+    borderWidth: 0,
+
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
-      height: 0,
+      height: 12,
     },
-    shadowOpacity: 0.15,
-    shadowRadius: 12.0,
-    elevation: 6,
+    shadowOpacity: 0.58,
+    shadowRadius: 16.0,
+
+    elevation: 24,
   },
   tools: {
     flexDirection: 'row',

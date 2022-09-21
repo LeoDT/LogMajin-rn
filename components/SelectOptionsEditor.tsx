@@ -8,6 +8,7 @@ import {
   Pressable,
 } from 'react-native';
 
+import {useTranslation} from 'react-i18next';
 import DraggableFlatList, {
   OpacityDecorator,
 } from 'react-native-draggable-flatlist';
@@ -23,6 +24,8 @@ interface Props {
 }
 
 export function SelectOptionsEditor({options, onChange}: Props): JSX.Element {
+  const {t} = useTranslation();
+
   const themeColor = useLogTypeTheme();
   const handleChange = useCallback(
     (v: string, i: number) => {
@@ -58,7 +61,9 @@ export function SelectOptionsEditor({options, onChange}: Props): JSX.Element {
               </Pressable>
 
               <TextInput
-                placeholder={item.option === '' ? 'New Option' : ''}
+                placeholder={
+                  item.option === '' ? t('placeholder.selectDefaultOption') : ''
+                }
                 value={item.option}
                 onChangeText={v => handleChange(v, item.index)}
                 style={styles.input}
@@ -78,9 +83,11 @@ export function SelectOptionsEditor({options, onChange}: Props): JSX.Element {
       <TouchableOpacity
         style={styles.addNew}
         onPress={() => {
-          handleChange('New Option', options.length);
+          handleChange(t('placeholder.selectDefaultOption'), options.length);
         }}>
-        <Text style={[styles.addNewText, {color: themeColor}]}>Add New</Text>
+        <Text style={[styles.addNewText, {color: themeColor}]}>
+          {t('placeholder.addSelectOption')}
+        </Text>
       </TouchableOpacity>
     </View>
   );

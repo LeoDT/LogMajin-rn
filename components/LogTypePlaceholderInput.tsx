@@ -5,6 +5,7 @@ import {
   BottomSheetScrollView,
   BottomSheetTextInput,
 } from '@gorhom/bottom-sheet';
+import {useTranslation} from 'react-i18next';
 
 import {loadLogInputHistory, PlaceholderValueTypes} from '../atoms/log';
 import {NeedInputPlaceholder, PlaceholderType} from '../atoms/logType';
@@ -28,6 +29,7 @@ export function LogTypePlaceholderInput<
   P extends NeedInputPlaceholder,
   V extends PlaceholderValueTypes[P['kind']],
 >({placeholder, value, onChange}: Props<P, V>): JSX.Element {
+  const {t} = useTranslation();
   const renderInput = useCallback(() => {
     switch (placeholder.kind) {
       case PlaceholderType.TextInput:
@@ -47,7 +49,9 @@ export function LogTypePlaceholderInput<
             />
             {history.length > 0 ? (
               <View style={styles.textInputHistory}>
-                <Text style={styles.textInputHistoryTitle}>History</Text>
+                <Text style={styles.textInputHistoryTitle}>
+                  {t('textInputHistoryLabel')}
+                </Text>
                 <BottomSheetScrollView
                   style={styles.textInputHistoryListWrapper}
                   horizontal>
