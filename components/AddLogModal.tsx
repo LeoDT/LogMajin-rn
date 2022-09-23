@@ -4,7 +4,6 @@ import {StyleSheet, Text, View} from 'react-native';
 import {NativeStackScreenProps} from '@react-navigation/native-stack';
 import {useAtom, useAtomValue, useSetAtom} from 'jotai';
 import {useTranslation} from 'react-i18next';
-import {SafeAreaView} from 'react-native-safe-area-context';
 
 import {commitLogAtom, makeLogAtom} from '../atoms/log';
 import {
@@ -47,7 +46,7 @@ export function AddLogModal({navigation, route}: Props): JSX.Element {
 
   return (
     <LogTypeThemeContext.Provider value={themeColor}>
-      <SafeAreaView style={styles.container}>
+      <View style={styles.container}>
         <View style={styles.header}>
           <Text style={styles.name}>{logType.name}</Text>
 
@@ -88,7 +87,7 @@ export function AddLogModal({navigation, route}: Props): JSX.Element {
             onFinish={onFinish}
           />
         ) : null}
-      </SafeAreaView>
+      </View>
     </LogTypeThemeContext.Provider>
   );
 }

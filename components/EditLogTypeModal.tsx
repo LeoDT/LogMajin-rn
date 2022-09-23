@@ -7,7 +7,6 @@ import {useAtomValue, useSetAtom} from 'jotai';
 import DraggableFlatList, {
   ScaleDecorator,
 } from 'react-native-draggable-flatlist';
-import {SafeAreaView} from 'react-native-safe-area-context';
 
 import {logTypeFamily} from '../atoms/logType';
 import {colors, colorValueForLogType} from '../colors';
@@ -58,7 +57,7 @@ export function EditLogTypeModal({route, navigation}: Props): JSX.Element {
 
   return (
     <LogTypeThemeContext.Provider value={themeColor}>
-      <SafeAreaView style={[styles.container, {paddingBottom: sheetPadding}]}>
+      <View style={[styles.container, {paddingBottom: sheetPadding}]}>
         <View style={styles.header}>
           <Pressable
             onPress={() =>
@@ -114,7 +113,7 @@ export function EditLogTypeModal({route, navigation}: Props): JSX.Element {
           logType={logType}
           ref={addPlaceholderSheetRef}
         />
-      </SafeAreaView>
+      </View>
     </LogTypeThemeContext.Provider>
   );
 }
